@@ -1,0 +1,43 @@
+{
+  "mqtt": {
+    "host": "localhost",
+    "port": 1883,
+    "username": "admin",
+    "password": "admin123"
+  },
+  "backend_url": "http://localhost:8000",
+  "interval_seconds": 2,
+  "devices": [
+    {
+      "device_id": "DEV-AAAAAAAA",
+      "api_key": "mk_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "type": "ECG",
+      "interval": 2,
+      "comment": "Replace device_id and api_key with values from /api/keys or ApiManager page"
+    },
+    {
+      "device_id": "DEV-BBBBBBBB",
+      "api_key": "mk_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "type": "Pulse Oximeter",
+      "interval": 3
+    },
+    {
+      "device_id": "DEV-CCCCCCCC",
+      "api_key": "mk_cccccccccccccccccccccccccccccccccc",
+      "type": "Ventilator",
+      "interval": 4
+    },
+    {
+      "device_id": "DEV-DDDDDDDD",
+      "api_key": "mk_dddddddddddddddddddddddddddddddddd",
+      "type": "Temperature Sensor",
+      "interval": 5
+    },
+    {
+      "device_id": "DEV-EEEEEEEE",
+      "api_key": "mk_eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "type": "Blood Pressure",
+      "interval": 6
+    }
+  ]
+}
