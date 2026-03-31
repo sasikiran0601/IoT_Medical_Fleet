@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    /* Light Mode Basics */
+    --bg-main: #F8FAFC;
+    --bg-alt: #F1F5F9;
+    --bg-section: #FFFFFF;
+    --surface-1: #FFFFFF;
+    --surface-2: #F8FAFC;
+    --surface-3: #F1F5F9;
+    
+    /* Text */
+    --text-primary: #111827;
+    --text-secondary: #4B5563;
+    --text-muted: #6B7280;
+    --text-disabled: #9CA3AF;
+    
+    /* Borders */
+    --border-subtle: #F3F4F6;
+    --border-default: #E5E7EB;
+    --border-strong: #D1D5DB;
+    
+    /* Brand (Teal → Sky) */
+    --primary: #14B8A6;         /* teal-500 */
+    --primary-hover: #0D9488;   /* teal-600 */
+    --primary-active: #0F766E;  /* teal-700 */
+    --primary-light: #2DD4BF;   /* teal-400 */
+    --primary-bg: #ECFEFF;      /* cyan-50-ish */
+    
+    /* Status Colors */
+    --success: #10B981;
+    --success-hover: #059669;
+    --success-light: #34D399;
+    --success-bg: #ECFDF5;
+    
+    --error: #EF4444;
+    --error-light: #F87171;
+    --error-bg: #FEF2F2;
+    
+    --warning: #F59E0B;
+    --warning-light: #FBBF24;
+    --warning-bg: #FFFBEB;
+    
+    --info: #3B82F6;
+    --info-light: #60A5FA;
+    --info-bg: #EFF6FF;
+    
+    --disabled: #E5E7EB;
+    --focus-ring: rgba(20, 184, 166, 0.35);
+    
+    /* Deprecated but kept for compatibility */
+    --gradient-primary: linear-gradient(90deg, #14B8A6, #0EA5E9); /* teal-500 → sky-500 */
+    --gradient-accent: linear-gradient(135deg, #10B981, #34D399);
+}
+
+@layer base {
+    body {
+        @apply min-h-screen bg-[#F8FAFC] text-text-primary font-sans antialiased;
+    }
+
+    ::-webkit-scrollbar {
+        width: 0.375rem;
+    }
+
+    ::-webkit-scrollbar-track {
+        background-color: var(--bg-alt);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color: var(--border-strong);
+        border-radius: 9999px;
+    }
+}
+
+@layer components {
+    .card {
+        @apply rounded-xl bg-white p-5 border border-gray-200 shadow-sm transition-all;
+    }
+
+    .btn-primary {
+        @apply text-white font-medium px-4 py-2 rounded-lg disabled:opacity-50 focus:outline-none focus:ring-2 bg-gradient-to-r from-teal-500 to-sky-500 hover:from-teal-600 hover:to-sky-600;
+        background-color: transparent;
+        --tw-ring-color: var(--focus-ring);
+    }
+
+    .btn-secondary {
+        @apply text-text-secondary bg-white font-medium px-4 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 border border-gray-300 shadow-sm hover:bg-gray-50;
+        --tw-ring-color: rgba(99, 102, 241, 0.24);
+    }
+
+    .btn-danger {
+        @apply text-white font-medium px-4 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 bg-red-500 hover:bg-red-600;
+        --tw-ring-color: rgba(239, 68, 68, 0.28);
+    }
+
+    .input {
+        @apply text-text-primary rounded-lg px-3 py-2 w-full transition-colors focus:outline-none focus:ring-2 placeholder:text-text-disabled bg-white border border-gray-300 shadow-sm;
+        --tw-ring-color: var(--focus-ring);
+    }
+
+    .input:focus {
+        border-color: var(--primary);
+    }
+
+    .badge-online {
+        @apply text-xs px-2 py-0.5 rounded-md font-medium;
+        background: var(--success-bg);
+        color: var(--success);
+    }
+
+    .badge-offline {
+        @apply text-xs px-2 py-0.5 rounded-md font-medium;
+        background: var(--error-bg);
+        color: var(--error);
+    }
+
+    .badge-on {
+        @apply text-xs px-2 py-0.5 rounded-md font-medium;
+        background: #FEF3C7; /* yellow-100 */
+        color: #D97706; /* yellow-600 */
+    }
+}
