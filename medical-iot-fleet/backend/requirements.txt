@@ -3,6 +3,7 @@ uvicorn[standard]
 websockets
 wsproto
 sqlalchemy
+asyncpg
 aiosqlite
 python-jose[cryptography]
 passlib[bcrypt]

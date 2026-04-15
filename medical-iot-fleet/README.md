@@ -1,6 +1,6 @@
 # Medical IoT Device Fleet Management System
 
-A full-stack hospital IoT device management platform built with **FastAPI**, **React**, **SQLite**, **MQTT**, and **WebSockets** — deployable on AWS EC2 via Docker Compose.
+A full-stack hospital IoT device management platform built with **FastAPI**, **React**, **PostgreSQL/SQLite**, **MQTT**, and **WebSockets** — deployable on AWS EC2 via Docker Compose.
 
 ---
 
@@ -25,7 +25,7 @@ A full-stack hospital IoT device management platform built with **FastAPI**, **R
 | Layer      | Technology                        |
 |------------|-----------------------------------|
 | Backend    | FastAPI (Python 3.11)             |
-| Database   | SQLite + SQLAlchemy (async)       |
+| Database   | PostgreSQL/SQLite + SQLAlchemy (async) |
 | Real-time  | WebSockets + MQTT (Mosquitto)     |
 | Frontend   | React + Vite + Tailwind CSS       |
 | Charts     | Recharts                          |
@@ -80,18 +80,40 @@ python device_sim.py
 
 ---
 
-## Docker Compose (All Services)
+## Docker Compose (Backend + MQTT + Postgres)
 
+This repository includes a ready Compose stack:
+- `backend` (FastAPI)
+- `mosquitto` (MQTT broker)
+- `db` (Postgres)
+
+### 1. Prepare environment files
 ```bash
-# Start everything
-docker-compose up -d --build
+# From repo root
+cp .env.example .env
+cp backend/.env.docker.example backend/.env.docker
+```
 
-# View logs
-docker-compose logs -f backend
-docker-compose logs -f mosquitto
+Update values in:
+- `.env` (Postgres + MQTT credentials used by Compose services)
+- `backend/.env.docker` (`SECRET_KEY`, `FRONTEND_URL`, OAuth/SMTP if needed)
 
-# Stop
-docker-compose down
+### 2. Start services
+```bash
+docker compose up -d --build
+docker compose ps
+```
+
+### 3. View logs
+```bash
+docker compose logs -f backend
+docker compose logs -f mosquitto
+docker compose logs -f db
+```
+
+### 4. Stop services
+```bash
+docker compose down
 ```
 
 ---
@@ -141,14 +163,17 @@ Then update `nginx/default.conf` with your domain name.
 ### Step 5 — Start services
 ```bash
 cd /home/ubuntu/medical-iot-fleet
-docker-compose up -d --build
-docker-compose ps
+cp .env.example .env
+cp backend/.env.docker.example backend/.env.docker
+nano backend/.env.docker   # set SECRET_KEY, FRONTEND_URL, optional OAuth/SMTP
+docker compose up -d --build
+docker compose ps
 ```
 
-### Step 6 — Set MQTT password
+### Step 6 — Validate services
 ```bash
-docker exec -it medical_iot_mqtt mosquitto_passwd -c /mosquitto/config/passwd admin
-docker-compose restart mosquitto
+curl http://localhost:8000/health
+docker compose logs -f backend
 ```
 
 ---
