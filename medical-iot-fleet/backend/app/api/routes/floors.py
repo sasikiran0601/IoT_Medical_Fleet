@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.exc import SQLAlchemyError
 from typing import List
 
 from app.db.database import get_db
@@ -19,10 +20,14 @@ async def create_floor(
     _: User = Depends(require_admin),
 ):
     floor = Floor(**data.model_dump())
-    db.add(floor)
-    await db.commit()
-    await db.refresh(floor)
-    return floor
+    try:
+        db.add(floor)
+        await db.commit()
+        await db.refresh(floor)
+        return floor
+    except SQLAlchemyError as exc:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail="Failed to create floor") from exc
 
 
 @router.get("/", response_model=List[FloorWithRooms])

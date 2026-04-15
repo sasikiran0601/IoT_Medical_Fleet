@@ -35,7 +35,10 @@ export default function FloorView() {
             setShowFloorModal(false);
             setFloorForm({ name: "", description: "" });
             fetchFloors();
-        } catch { toast.error("Failed to add floor"); }
+        } catch (err) {
+            const message = err?.response?.data?.detail || "Failed to add floor";
+            toast.error(message);
+        }
     };
 
     const handleAddRoom = async (e) => {
@@ -47,7 +50,10 @@ export default function FloorView() {
             setShowRoomModal(false);
             setRoomForm({ name: "", floor_id: "" });
             fetchFloors();
-        } catch { toast.error("Failed to add room"); }
+        } catch (err) {
+            const message = err?.response?.data?.detail || "Failed to add room";
+            toast.error(message);
+        }
     };
 
     if (loading) return <LoadingSpinner />;
