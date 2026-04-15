@@ -9,15 +9,24 @@ export default function StatCard({ label, value, icon: Icon, color = "primary" }
     const s = styles[color] || styles.primary;
 
     return (
-        <div className="bg-white rounded-2xl p-6 border border-[#E5E7EB] shadow-[0_4px_12px_rgba(0,0,0,0.02)] flex items-center gap-4 transition-all hover:shadow-[0_8px_24px_rgba(0,0,0,0.04)] hover:-translate-y-0.5">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${s.wrap}`}>
-                <Icon size={24} className={s.icon} strokeWidth={2} />
+        <div 
+            className="bg-white flex items-center transition-all duration-200 hover:-translate-y-[2px]"
+            style={{
+                padding: "18px 20px",
+                borderRadius: "12px",
+                border: "1px solid #E5E7EB",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
+                gap: "20px"
+            }}
+        >
+            <div className={`w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0 ${s.wrap}`}>
+                <Icon size={20} className={s.icon} strokeWidth={2.5} />
             </div>
-            <div>
-                <p className="text-3xl font-bold text-gray-900 tracking-tight leading-none mb-1">
+            <div className="flex flex-col">
+                <p className="text-[32px] font-bold text-gray-900 tracking-tight leading-none mb-[6px]">
                     {value ?? "—"}
                 </p>
-                <p className="text-sm font-medium text-gray-500">
+                <p className="text-[13px] font-medium" style={{ color: "#6B7280" }}>
                     {label}
                 </p>
             </div>

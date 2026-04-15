@@ -5,3 +5,4 @@ from app.schemas.device import DeviceCreate, DeviceOut, DeviceUpdate, DeviceCont
 from app.schemas.sensor_data import SensorDataIn, SensorDataOut
 from app.schemas.audit_log import AuditLogOut
 from app.schemas.alert import AlertOut
+from app.schemas.invite import InviteCreate, InviteOut, InviteValidateOut

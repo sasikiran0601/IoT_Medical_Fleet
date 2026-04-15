@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Activity, Wifi, WifiOff, Power, Plus } from "lucide-react";
 import StatCard from "../components/dashboard/StatCard";
 import DeviceGrid from "../components/dashboard/DeviceGrid";
@@ -12,12 +12,14 @@ export default function Dashboard() {
     const { devices, stats, loading, refetch, patchDevice } = useDevices();
     const [showForm, setShowForm] = useState(false);
     const [filter, setFilter] = useState("all");
+    const { connected } = useWebSocket();
 
     // Live WebSocket updates
     useWebSocket("device_update", useCallback((msg) => {
         patchDevice(msg.device_id, {
             is_on: msg.is_on ?? undefined,
-            is_online: msg.is_online ?? undefined,
+            is_online: msg.is_online ?? true,
+            last_seen: msg.timestamp ?? undefined,
             last_confidence: msg.confidence_score ?? undefined,
         });
     }, [patchDevice]));
@@ -25,6 +27,15 @@ export default function Dashboard() {
     useWebSocket("state_change", useCallback((msg) => {
         patchDevice(msg.device_id, { is_on: msg.is_on });
     }, [patchDevice]));
+
+    // Fallback polling when websocket realtime channel is disconnected.
+    useEffect(() => {
+        if (connected) return undefined;
+        const timer = setInterval(() => {
+            refetch();
+        }, 5000);
+        return () => clearInterval(timer);
+    }, [connected, refetch]);
 
     const filtered = devices.filter((d) => {
         if (filter === "online") return d.is_online;
@@ -41,7 +52,7 @@ export default function Dashboard() {
     ];
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-10">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
@@ -57,37 +68,46 @@ export default function Dashboard() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard label="Total Devices" value={stats?.total} icon={Activity} color="primary" />
                 <StatCard label="Online" value={stats?.online} icon={Wifi} color="green" />
                 <StatCard label="Offline" value={stats?.offline} icon={WifiOff} color="slate" />
                 <StatCard label="Active (ON)" value={stats?.active} icon={Power} color="yellow" />
             </div>
 
-            {/* Filter tabs (Segmented Control style) */}
-            <div className="flex items-center justify-between">
-                <div className="flex bg-[#F3F4F6] p-1 rounded-lg gap-1 border border-gray-100 shadow-inner">
-                    {FILTERS.map(({ key, label }) => (
-                        <button
-                            key={key}
-                            onClick={() => setFilter(key)}
-                            className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 ${
-                                filter === key
-                                    ? "bg-gradient-to-r from-teal-500 to-sky-500 text-white shadow-sm"
-                                    : "text-teal-600 bg-teal-50 hover:bg-teal-100"
-                            }`}
-                        >
-                            {label}
-                        </button>
-                    ))}
+            {/* Filter tabs and Grid */}
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <div 
+                        className="flex p-1 gap-1 shadow-inner"
+                        style={{ background: "rgba(14,165,233,0.1)", borderRadius: "12px" }}
+                    >
+                        {FILTERS.map(({ key, label }) => (
+                            <button
+                                key={key}
+                                onClick={() => setFilter(key)}
+                                className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                                    filter === key
+                                        ? "shadow-sm"
+                                        : "hover:bg-white/50"
+                                }`}
+                                style={{
+                                    background: filter === key ? "linear-gradient(135deg, #14B8A6, #0EA5E9)" : "transparent",
+                                    color: filter === key ? "white" : "#6B7280"
+                                }}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+                    <span className="text-sm text-gray-500 font-medium">
+                        {filtered.length} device{filtered.length !== 1 ? "s" : ""}
+                    </span>
                 </div>
-                <span className="text-sm text-gray-500 font-medium">
-                    {filtered.length} device{filtered.length !== 1 ? "s" : ""}
-                </span>
-            </div>
 
-            {/* Grid — pass refetch as onDeleted so card removal refreshes list */}
-            <DeviceGrid devices={filtered} loading={loading} onDeleted={refetch} />
+                {/* Grid — pass refetch as onDeleted so card removal refreshes list */}
+                <DeviceGrid devices={filtered} loading={loading} onDeleted={refetch} />
+            </div>
 
             {showForm && (
                 <DeviceForm onClose={() => setShowForm(false)} onCreated={refetch} />

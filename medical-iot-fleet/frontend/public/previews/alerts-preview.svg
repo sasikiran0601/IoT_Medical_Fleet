@@ -1,0 +1,29 @@
+<svg width="424" height="252" viewBox="0 0 424 252" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="424" height="252" rx="18" fill="#F8FAFF"/>
+<rect x="0" y="0" width="424" height="34" fill="#F87171"/>
+<rect x="18" y="10" width="126" height="14" rx="7" fill="white" fill-opacity="0.45"/>
+<rect x="20" y="50" width="384" height="184" rx="14" fill="white"/>
+<rect x="34" y="66" width="356" height="44" rx="10" fill="#FFF1F1"/>
+<rect x="34" y="118" width="356" height="44" rx="10" fill="#FFF9EC"/>
+<rect x="34" y="170" width="356" height="44" rx="10" fill="#ECFDF5"/>
+<circle cx="52" cy="88" r="9" fill="#EF4444"/>
+<path d="M52 82V90" stroke="white" stroke-width="2.4" stroke-linecap="round"/>
+<circle cx="52" cy="95" r="1.4" fill="white"/>
+<rect x="68" y="79" width="168" height="8" rx="4" fill="#F3A5A5"/>
+<rect x="68" y="92" width="118" height="6" rx="3" fill="#EFC2C2"/>
+<rect x="316" y="78" width="62" height="20" rx="10" fill="#FECACA"/>
+<text x="334" y="92" fill="#B91C1C" font-family="Arial, sans-serif" font-size="11" font-weight="700">HIGH</text>
+<circle cx="52" cy="140" r="9" fill="#F59E0B"/>
+<path d="M52 134V142" stroke="white" stroke-width="2.4" stroke-linecap="round"/>
+<circle cx="52" cy="147" r="1.4" fill="white"/>
+<rect x="68" y="131" width="186" height="8" rx="4" fill="#F5CF8B"/>
+<rect x="68" y="144" width="132" height="6" rx="3" fill="#EEDCB8"/>
+<rect x="304" y="130" width="74" height="20" rx="10" fill="#FEF3C7"/>
+<text x="324" y="144" fill="#B45309" font-family="Arial, sans-serif" font-size="11" font-weight="700">MED</text>
+<circle cx="52" cy="192" r="9" fill="#10B981"/>
+<path d="M47 192L51 196L58 188" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="68" y="183" width="166" height="8" rx="4" fill="#9FE6C9"/>
+<rect x="68" y="196" width="120" height="6" rx="3" fill="#BCEBD7"/>
+<rect x="304" y="182" width="74" height="20" rx="10" fill="#D1FAE5"/>
+<text x="324" y="196" fill="#047857" font-family="Arial, sans-serif" font-size="11" font-weight="700">LOW</text>
+</svg>

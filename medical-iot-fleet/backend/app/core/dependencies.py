@@ -44,6 +44,26 @@ async def require_admin(current_user: User = Depends(get_current_user)) -> User:
     return current_user
 
 
+async def require_nurse_or_above(current_user: User = Depends(get_current_user)) -> User:
+    """Nurse, Doctor, and Admin can control devices."""
+    if current_user.role not in ("nurse", "doctor", "admin"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Nurse, Doctor, or Admin access required to control devices",
+        )
+    return current_user
+
+
+async def require_doctor_or_above(current_user: User = Depends(get_current_user)) -> User:
+    """Doctor and Admin can resolve/dismiss alerts."""
+    if current_user.role not in ("doctor", "admin"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Doctor or Admin access required to manage alerts",
+        )
+    return current_user
+
+
 async def get_device_by_api_key(
     api_key: str = Depends(api_key_header),
     db: AsyncSession = Depends(get_db),

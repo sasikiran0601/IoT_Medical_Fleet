@@ -11,7 +11,8 @@ async def push_ota_update(
 ):
     """
     Trigger OTA firmware update for a device.
-    In production this would publish to MQTT topic: hospital/devices/{id}/ota
+    In production this would publish to MQTT topic:
+    hospital/{floor}/{room_no}/{bed_no}/{device_id}/ota
     For now it updates the firmware version in the DB and logs the action.
     """
     old_version = device.firmware_version

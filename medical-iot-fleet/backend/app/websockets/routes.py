@@ -6,21 +6,25 @@ router = APIRouter(tags=["WebSocket"])
 
 @router.websocket("/ws/dashboard")
 async def dashboard_ws(websocket: WebSocket):
-    """Main dashboard — receives all device updates."""
+    """Main dashboard endpoint for live updates."""
     await manager.connect_dashboard(websocket)
     try:
         while True:
-            await websocket.receive_text()  # keep-alive ping
+            message = await websocket.receive_text()
+            if message == "ping":
+                await websocket.send_text("pong")
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
 
 @router.websocket("/ws/device/{device_id}")
 async def device_ws(websocket: WebSocket, device_id: str):
-    """Device detail page — receives live sensor data for one device."""
+    """Device detail endpoint for a single device stream."""
     await manager.connect_device(websocket, device_id)
     try:
         while True:
-            await websocket.receive_text()  # keep-alive ping
+            message = await websocket.receive_text()
+            if message == "ping":
+                await websocket.send_text("pong")
     except WebSocketDisconnect:
         manager.disconnect(websocket, device_id)

@@ -1,0 +1,21 @@
+<svg width="424" height="252" viewBox="0 0 424 252" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="424" height="252" rx="18" fill="#F2FBFF"/>
+<rect x="0" y="0" width="424" height="34" fill="#35A6EA"/>
+<rect x="18" y="10" width="132" height="14" rx="7" fill="white" fill-opacity="0.4"/>
+<rect x="20" y="50" width="384" height="184" rx="14" fill="white"/>
+<rect x="34" y="66" width="170" height="70" rx="10" fill="#F4FBFF"/>
+<rect x="220" y="66" width="170" height="70" rx="10" fill="#F4FBFF"/>
+<rect x="34" y="148" width="170" height="70" rx="10" fill="#F4FBFF"/>
+<rect x="220" y="148" width="170" height="70" rx="10" fill="#F4FBFF"/>
+<path d="M45 104H62L72 86L85 120L98 95L112 104H126" stroke="#17A5A1" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="134" y="111" fill="#1A9E74" font-family="Arial, sans-serif" font-size="18" font-weight="700">ECG</text>
+<path d="M246 99C246 89 254 81 264 81C274 81 282 89 282 99C282 109 274 117 264 117" stroke="#EF5350" stroke-width="3.2" stroke-linecap="round"/>
+<text x="292" y="111" fill="#CB5A3E" font-family="Arial, sans-serif" font-size="18" font-weight="700">Temp</text>
+<path d="M52 190C52 176 63 164 78 164C93 164 104 176 104 190C104 204 93 216 78 216C63 216 52 204 52 190Z" fill="#E1F5FE"/>
+<path d="M78 172L84 187L78 206L72 187L78 172Z" fill="#22A6D5"/>
+<text x="114" y="196" fill="#1D8BB5" font-family="Arial, sans-serif" font-size="18" font-weight="700">SpO2</text>
+<path d="M238 198L256 180L272 196L290 178L314 202" stroke="#7666F2" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="238" cy="198" r="4" fill="#7666F2"/>
+<circle cx="314" cy="202" r="4" fill="#7666F2"/>
+<text x="320" y="202" fill="#6556D5" font-family="Arial, sans-serif" font-size="18" font-weight="700">Motion</text>
+</svg>

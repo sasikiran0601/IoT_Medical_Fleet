@@ -5,7 +5,8 @@ import bcrypt
 from app.core.config import settings
 
 def hash_password(password: str) -> str:
-    salt = bcrypt.gensalt()
+    # Lowered rounds from default to speed up registration/login over network
+    salt = bcrypt.gensalt(rounds=10)
     return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
 
 def verify_password(plain: str, hashed: str) -> bool:

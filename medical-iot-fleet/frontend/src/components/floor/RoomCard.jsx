@@ -4,10 +4,13 @@ import { DoorOpen, Trash2 } from "lucide-react";
 import { getDevices } from "../../api/deviceApi";
 import { deleteRoom } from "../../api/floorapi";
 import { useAuth } from "../../hooks/useAuth";
+import ConfirmDialog from "../common/ConfirmDialog";
 import toast from "react-hot-toast";
 
 export default function RoomCard({ room, onDeleted }) {
     const [devices, setDevices] = useState([]);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const { user } = useAuth();
     const navigate = useNavigate();
 
@@ -17,15 +20,22 @@ export default function RoomCard({ room, onDeleted }) {
             .catch(() => {});
     }, [room.id]);
 
-    const handleDelete = async (e) => {
+    const openDeleteConfirm = (e) => {
         e.stopPropagation();
-        if (!confirm(`Delete room "${room.name}"?`)) return;
+        setShowDeleteConfirm(true);
+    };
+
+    const handleDelete = async () => {
+        setDeleting(true);
         try {
             await deleteRoom(room.id);
             toast.success("Room deleted");
+            setShowDeleteConfirm(false);
             onDeleted?.();
         } catch {
             toast.error("Failed to delete room");
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -39,7 +49,7 @@ export default function RoomCard({ room, onDeleted }) {
                     <span className="text-sm font-medium text-text-primary">{room.name}</span>
                 </div>
                 {user?.role === "admin" && (
-                    <button onClick={handleDelete} className="text-text-disabled transition-colors hover:text-error-light">
+                    <button onClick={openDeleteConfirm} className="text-text-disabled transition-colors hover:text-error-light">
                         <Trash2 size={13} />
                     </button>
                 )}
@@ -64,6 +74,17 @@ export default function RoomCard({ room, onDeleted }) {
             <p className="mt-2 text-xs text-text-muted">
                 {onlineCount}/{devices.length} online
             </p>
+
+            <ConfirmDialog
+                open={showDeleteConfirm}
+                title="Delete Room"
+                description={`Delete "${room.name}"? This action cannot be undone.`}
+                confirmText="Delete"
+                cancelText="Cancel"
+                loading={deleting}
+                onCancel={() => !deleting && setShowDeleteConfirm(false)}
+                onConfirm={handleDelete}
+            />
         </div>
     );
 }

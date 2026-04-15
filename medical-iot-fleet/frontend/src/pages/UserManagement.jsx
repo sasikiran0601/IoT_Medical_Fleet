@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Trash2 } from "lucide-react";
 import { getUsers, updateUser, deleteUser } from "../api/userapi";
 import LoadingSpinner from "../components/common/LoadingSpinner";
+import ConfirmDialog from "../components/common/ConfirmDialog";
 import { useAuth } from "../hooks/useAuth";
 import { fmtDate } from "../utils/formatters";
 import { ROLES } from "../utils/constants";
@@ -18,6 +20,8 @@ export default function UserManagement() {
     const { user: me } = useAuth();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [pendingDelete, setPendingDelete] = useState(null);
+    const [deleting, setDeleting] = useState(false);
 
     const fetchUsers = async () => {
         try {
@@ -46,22 +50,33 @@ export default function UserManagement() {
         } catch { toast.error("Failed to update user"); }
     };
 
-    const handleDelete = async (userId) => {
-        if (!confirm("Delete this user? This cannot be undone.")) return;
+    const handleDelete = async () => {
+        if (!pendingDelete) return;
+        setDeleting(true);
         try {
-            await deleteUser(userId);
+            await deleteUser(pendingDelete.id);
             toast.success("User deleted");
+            setPendingDelete(null);
             fetchUsers();
         } catch (err) { toast.error(err.response?.data?.detail || "Failed to delete user"); }
+        finally { setDeleting(false); }
     };
 
     if (loading) return <LoadingSpinner />;
 
     return (
         <div className="space-y-6">
-            <div>
+            <div className="flex flex-wrap items-start justify-between gap-3">
                 <h1 className="text-xl font-bold text-text-primary">User Management</h1>
-                <p className="text-sm text-text-muted">{users.length} registered staff accounts</p>
+                <div className="flex items-center gap-2">
+                    <p className="text-sm text-text-muted">{users.length} registered staff accounts</p>
+                    <Link
+                        to="/invites"
+                        className="rounded-lg border border-border-default bg-surface-2 px-3 py-1.5 text-xs font-medium text-text-secondary transition hover:bg-surface-3"
+                    >
+                        Manage Invites
+                    </Link>
+                </div>
             </div>
 
             <div className="overflow-x-auto rounded-xl border border-border-subtle bg-bg-section/40">
@@ -140,7 +155,7 @@ export default function UserManagement() {
                                                 {u.is_active ? "Deactivate" : "Activate"}
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(u.id)}
+                                                onClick={() => setPendingDelete({ id: u.id, name: u.name })}
                                                 className="text-text-disabled transition-colors hover:text-error-light"
                                             >
                                                 <Trash2 size={14} />
@@ -153,6 +168,17 @@ export default function UserManagement() {
                     </tbody>
                 </table>
             </div>
+
+            <ConfirmDialog
+                open={!!pendingDelete}
+                title="Delete User"
+                description={`Delete user "${pendingDelete?.name ?? ""}"? This action cannot be undone.`}
+                confirmText="Delete"
+                cancelText="Cancel"
+                loading={deleting}
+                onCancel={() => !deleting && setPendingDelete(null)}
+                onConfirm={handleDelete}
+            />
         </div>
     );
 }

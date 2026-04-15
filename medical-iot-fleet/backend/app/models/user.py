@@ -26,9 +26,10 @@ class User(Base):
     name = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False, index=True)
     hashed_password = Column(String, nullable=True)          # null for OAuth users
-    role = Column(String, default=UserRole.nurse)
+    role = Column(String, default=UserRole.viewer)
     assigned_floor = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
+    email_verified = Column(Boolean, default=False)
     auth_provider = Column(String, default=AuthProvider.local)
     oauth_id = Column(String, nullable=True)                 # Google/GitHub user ID
     avatar_url = Column(String, nullable=True)

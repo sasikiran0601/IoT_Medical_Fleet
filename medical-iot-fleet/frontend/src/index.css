@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -57,7 +59,8 @@
 
 @layer base {
     body {
-        @apply min-h-screen bg-[#F8FAFC] text-text-primary font-sans antialiased;
+        @apply min-h-screen text-text-primary font-sans antialiased;
+        background: #F8FAFC;
     }
 
     ::-webkit-scrollbar {
@@ -72,17 +75,51 @@
         background-color: var(--border-strong);
         border-radius: 9999px;
     }
+
+    model-viewer::part(default-progress-bar) {
+        display: none;
+    }
+
+    model-viewer::part(default-progress-mask) {
+        display: none;
+    }
+
+    model-viewer::part(default-ar-button) {
+        display: none;
+    }
+
 }
 
 @layer components {
+    .saas-card {
+        background: #FFFFFF;
+        border: 1px solid #E5E7EB;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        transition: all 0.2s ease;
+    }
+
+    .saas-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    }
+    
+    .surface-layer {
+        display: none; /* Removed entirely per user request */
+    }
+
     .card {
-        @apply rounded-xl bg-white p-5 border border-gray-200 shadow-sm transition-all;
+        @apply rounded-xl bg-white p-5 border border-gray-200 shadow-sm transition-all duration-200;
     }
 
     .btn-primary {
-        @apply text-white font-medium px-4 py-2 rounded-lg disabled:opacity-50 focus:outline-none focus:ring-2 bg-gradient-to-r from-teal-500 to-sky-500 hover:from-teal-600 hover:to-sky-600;
-        background-color: transparent;
+        @apply text-white font-medium px-4 py-2 rounded-lg disabled:opacity-50 focus:outline-none focus:ring-2;
+        background: linear-gradient(135deg, #14B8A6, #0EA5E9);
+        transition: all 0.2s ease;
         --tw-ring-color: var(--focus-ring);
+    }
+    .btn-primary:hover:not(:disabled) {
+        background: linear-gradient(135deg, #0D9488, #0284C7);
     }
 
     .btn-secondary {
@@ -121,4 +158,38 @@
         background: #FEF3C7; /* yellow-100 */
         color: #D97706; /* yellow-600 */
     }
+}
+
+@keyframes neonFlow {
+    0% {
+        stroke-dashoffset: 26;
+        opacity: 0.22;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        stroke-dashoffset: 0;
+        opacity: 0.22;
+    }
+}
+
+.neon-flow-line {
+    animation: neonFlow 0.9s linear infinite;
+}
+
+@keyframes esp32Float {
+    0% {
+        transform: translateY(0px) rotateZ(-0.6deg);
+    }
+    50% {
+        transform: translateY(-5px) rotateZ(0.6deg);
+    }
+    100% {
+        transform: translateY(0px) rotateZ(-0.6deg);
+    }
+}
+
+.esp32-float {
+    animation: esp32Float 8s ease-in-out infinite;
 }

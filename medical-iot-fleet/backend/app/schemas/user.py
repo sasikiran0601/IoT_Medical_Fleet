@@ -7,8 +7,8 @@ class UserRegister(BaseModel):
     name: str
     email: EmailStr
     password: str
-    role: str = "nurse"
     assigned_floor: Optional[str] = None
+    invite_token: Optional[str] = None
 
 
 class UserLogin(BaseModel):
@@ -23,6 +23,7 @@ class UserOut(BaseModel):
     role: str
     assigned_floor: Optional[str]
     is_active: bool
+    email_verified: bool
     auth_provider: str
     avatar_url: Optional[str]
     created_at: datetime

@@ -1,5 +1,6 @@
-import { AlertTriangle, CheckCircle, Trash2 } from "lucide-react";
+import { AlertTriangle, CheckCircle, Trash2, Lock } from "lucide-react";
 import { resolveAlert, deleteAlert } from "../../api/alertApi";
+import { useAuth } from "../../hooks/useAuth";
 import { timeAgo } from "../../utils/formatters";
 import toast from "react-hot-toast";
 
@@ -18,6 +19,9 @@ const TYPE_COLOR = {
 };
 
 export default function AlertList({ alerts, onRefresh }) {
+    const { user } = useAuth();
+    const canManage = ["doctor", "admin"].includes(user?.role);
+
     if (!alerts.length) {
         return (
             <div className="py-12 text-center text-text-muted">
@@ -64,18 +68,26 @@ export default function AlertList({ alerts, onRefresh }) {
                         <p className="text-sm text-text-primary">{alert.message}</p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
-                        <button
-                            onClick={() => handleResolve(alert.id)}
-                            className="rounded-lg bg-success/12 px-2 py-1 text-xs text-success-light transition-colors hover:bg-success/20"
-                        >
-                            Resolve
-                        </button>
-                        <button
-                            onClick={() => handleDelete(alert.id)}
-                            className="text-text-disabled transition-colors hover:text-error-light"
-                        >
-                            <Trash2 size={14} />
-                        </button>
+                        {canManage ? (
+                            <>
+                                <button
+                                    onClick={() => handleResolve(alert.id)}
+                                    className="rounded-lg bg-success/12 px-2 py-1 text-xs text-success-light transition-colors hover:bg-success/20"
+                                >
+                                    Resolve
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(alert.id)}
+                                    className="text-text-disabled transition-colors hover:text-error-light"
+                                >
+                                    <Trash2 size={14} />
+                                </button>
+                            </>
+                        ) : (
+                            <span className="flex items-center gap-1 text-xs text-text-disabled">
+                                <Lock size={11} /> View only
+                            </span>
+                        )}
                     </div>
                 </div>
             ))}

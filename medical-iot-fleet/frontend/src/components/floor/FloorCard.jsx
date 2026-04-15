@@ -3,21 +3,31 @@ import { ChevronDown, ChevronRight, Building2, Trash2 } from "lucide-react";
 import RoomCard from "./RoomCard";
 import { deleteFloor } from "../../api/floorapi";
 import { useAuth } from "../../hooks/useAuth";
+import ConfirmDialog from "../common/ConfirmDialog";
 import toast from "react-hot-toast";
 
 export default function FloorCard({ floor, onDeleted }) {
     const [open, setOpen] = useState(true);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const { user } = useAuth();
 
-    const handleDelete = async (e) => {
+    const openDeleteConfirm = (e) => {
         e.stopPropagation();
-        if (!confirm(`Delete floor "${floor.name}"? All rooms and devices will be unlinked.`)) return;
+        setShowDeleteConfirm(true);
+    };
+
+    const handleDelete = async () => {
+        setDeleting(true);
         try {
             await deleteFloor(floor.id);
             toast.success("Floor deleted");
+            setShowDeleteConfirm(false);
             onDeleted?.();
         } catch {
             toast.error("Failed to delete floor");
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -42,7 +52,7 @@ export default function FloorCard({ floor, onDeleted }) {
                 <div className="flex items-center gap-2">
                     {user?.role === "admin" && (
                         <button
-                            onClick={handleDelete}
+                            onClick={openDeleteConfirm}
                             className="p-1 text-text-disabled transition-colors hover:text-error-light"
                         >
                             <Trash2 size={14} />
@@ -63,6 +73,17 @@ export default function FloorCard({ floor, onDeleted }) {
                     )}
                 </div>
             )}
+
+            <ConfirmDialog
+                open={showDeleteConfirm}
+                title="Delete Floor"
+                description={`Delete "${floor.name}"? All rooms and devices will be unlinked.`}
+                confirmText="Delete"
+                cancelText="Cancel"
+                loading={deleting}
+                onCancel={() => !deleting && setShowDeleteConfirm(false)}
+                onConfirm={handleDelete}
+            />
         </div>
     );
 }

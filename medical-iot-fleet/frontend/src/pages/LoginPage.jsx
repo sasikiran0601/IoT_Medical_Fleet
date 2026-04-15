@@ -1,166 +1,166 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { HeartPulse, Github } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Github } from "lucide-react";
+
 import { loginLocal, googleLoginUrl, githubLoginUrl } from "../api/authApi";
 import { useAuth } from "../hooks/useAuth";
+import SafeIoTShowcase from "../components/auth/SafeIoTShowcase";
+import { IS_PUBLIC_SIGNUP_DISABLED, SUPPORT_EMAIL } from "../utils/env";
 import toast from "react-hot-toast";
+
+const inputClass = "w-full rounded-[10px] border border-[#E5E7EB] bg-white/60 px-3 py-2.5 text-sm text-gray-900 outline-none transition-all duration-200 focus:border-[#0EA5E9] focus:shadow-[0_0_0_3px_rgba(14,165,233,0.15)]";
+const socialBtnClass = "flex w-full items-center justify-center gap-3 rounded-[10px] border border-[#E5E7EB] bg-white py-2.5 text-sm font-medium text-gray-700 shadow-[0_2px_6px_rgba(0,0,0,0.04)] transition-all duration-200 hover:bg-[#F9FAFB]";
 
 export default function LoginPage() {
     const { login } = useAuth();
     const navigate = useNavigate();
-    const [tab, setTab] = useState("login");
+    const [searchParams, setSearchParams] = useSearchParams();
     const [loading, setLoading] = useState(false);
-    const [form, setForm] = useState({ name: "", email: "", password: "", role: "nurse" });
+    const [form, setForm] = useState({ email: "", password: "" });
+
+    useEffect(() => {
+        const oauthError = searchParams.get("error");
+        if (!oauthError) return;
+
+        toast.error(oauthError);
+        const next = new URLSearchParams(searchParams);
+        next.delete("error");
+        setSearchParams(next, { replace: true });
+    }, [searchParams, setSearchParams]);
 
     const handleLocal = async (e) => {
         e.preventDefault();
+        if (!form.email || !form.password) {
+            toast.error("Please fill your email and password");
+            return;
+        }
         setLoading(true);
         try {
             const res = await loginLocal(form.email, form.password);
             login(res.data.access_token, res.data.user);
             navigate("/");
-        } catch (err) {
-            toast.error(err.response?.data?.detail || "Login failed");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleRegister = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            const { registerUser } = await import("../api/authApi");
-            const res = await registerUser(form);
-            login(res.data.access_token, res.data.user);
-            navigate("/");
-        } catch (err) {
-            toast.error(err.response?.data?.detail || "Registration failed");
+        } catch {
+            toast.error("Invalid credentials");
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-[#F8F9FA] p-4 font-sans">
-            
-            {/* Header / Logo Section */}
-            <div className="mb-8 text-center flex flex-col items-center">
-                <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 shadow-sm ring-1 ring-inset ring-indigo-100">
-                    <HeartPulse size={32} className="text-indigo-600" />
+        <div
+            className="relative min-h-screen overflow-hidden"
+            style={{ background: "linear-gradient(135deg, #5EEAD4 0%, #60A5FA 100%)" }}
+        >
+            <div className="pointer-events-none absolute -left-28 -top-28 h-[460px] w-[460px] rounded-full bg-cyan-200/30 blur-[120px]" />
+            <div className="pointer-events-none absolute -bottom-36 right-10 h-[500px] w-[500px] rounded-full bg-sky-300/25 blur-[110px]" />
+            <div
+                className="pointer-events-none absolute inset-0 opacity-[0.08]"
+                style={{
+                    backgroundImage: "linear-gradient(rgba(255,255,255,0.35) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.35) 1px, transparent 1px)",
+                    backgroundSize: "40px 40px",
+                }}
+            />
+
+            <div className="relative z-10 flex min-h-screen items-center justify-end px-6 md:px-12 lg:px-16 xl:px-20">
+                <div className="mr-auto hidden lg:flex lg:items-center lg:justify-center lg:origin-center lg:scale-[0.78] xl:scale-100">
+                    <SafeIoTShowcase />
                 </div>
-                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Medical IoT Fleet</h1>
-                <p className="mt-2 text-sm text-gray-500">Hospital Device Management System</p>
-            </div>
-
-            {/* Auth Card */}
-            <div className="w-full max-w-[400px] bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm">
-                
-                {/* Tabs */}
-                <div className="mb-6 flex rounded-full bg-gray-50 p-1 border border-gray-200">
-                    {["login", "register"].map((t) => (
-                        <button
-                            key={t}
-                            type="button"
-                            onClick={() => setTab(t)}
-                            className={`flex-1 rounded-full py-2 text-sm font-semibold capitalize transition-all duration-200 ${
-                                tab === t 
-                                ? "bg-white text-gray-900 shadow-sm ring-1 ring-gray-200" 
-                                : "text-gray-500 hover:text-gray-700"
-                            }`}
-                        >
-                            {t}
-                        </button>
-                    ))}
-                </div>
-
-                {/* Form */}
-                <form onSubmit={tab === "login" ? handleLocal : handleRegister} className="space-y-4">
-                    {tab === "register" && (
-                        <div>
-                            <label className="mb-1.5 block text-xs font-semibold text-gray-700">Full Name</label>
-                            <input
-                                className="w-full rounded-lg bg-gray-50 border border-gray-200 px-3 py-2.5 text-sm text-gray-900 placeholder:text-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
-                                value={form.name}
-                                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                            />
-                        </div>
-                    )}
-
-                    <div>
-                        <label className="mb-1.5 block text-xs font-semibold text-gray-700">Email</label>
-                        <input
-                            className="w-full rounded-lg bg-gray-50 border border-gray-200 px-3 py-2.5 text-sm text-gray-900 placeholder:text-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
-                            type="email"
-                            value={form.email}
-                            onChange={(e) => setForm({ ...form, email: e.target.value })}
-                        />
-                    </div>
-
-                    <div>
-                        <label className="mb-1.5 block text-xs font-semibold text-gray-700">Password</label>
-                        <input
-                            className="w-full rounded-lg bg-gray-50 border border-gray-200 px-3 py-2.5 text-sm text-gray-900 placeholder:text-transparent focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
-                            type="password"
-                            value={form.password}
-                            onChange={(e) => setForm({ ...form, password: e.target.value })}
-                        />
-                    </div>
-
-                    {tab === "register" && (
-                        <div>
-                            <label className="mb-1.5 block text-xs font-semibold text-gray-700">Role</label>
-                            <select
-                                className="w-full rounded-lg bg-gray-50 border border-gray-200 px-3 py-2.5 text-sm text-gray-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors"
-                                value={form.role}
-                                onChange={(e) => setForm({ ...form, role: e.target.value })}
+                <div className="flex w-full max-w-[420px] flex-col items-center py-8">
+                    <div className="w-full rounded-2xl border border-white/40 bg-white/75 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.08)] backdrop-blur-[12px] transition-all duration-200 hover:shadow-[0_26px_48px_rgba(0,0,0,0.10)] md:p-7">
+                        <div className="mb-6 flex rounded-full bg-[#F1F5F9] p-1">
+                            <Link
+                                to="/login"
+                                className="flex-1 rounded-full bg-white py-2 text-center text-sm font-semibold text-gray-900 shadow-[0_2px_6px_rgba(0,0,0,0.06)] transition-all duration-200"
                             >
-                                <option value="nurse">Nurse</option>
-                                <option value="doctor">Doctor</option>
-                                <option value="viewer">Viewer</option>
-                                <option value="admin">Admin</option>
-                            </select>
+                                Login
+                            </Link>
+                            {IS_PUBLIC_SIGNUP_DISABLED ? (
+                                <div className="flex-1 rounded-full py-2 text-center text-sm font-semibold text-gray-500">
+                                    Invite Only
+                                </div>
+                            ) : (
+                                <Link
+                                    to="/register"
+                                    className="flex-1 rounded-full py-2 text-center text-sm font-semibold text-gray-500 transition-all duration-200 hover:text-gray-700"
+                                >
+                                    Register
+                                </Link>
+                            )}
                         </div>
-                    )}
 
-                    <button 
-                        type="submit" 
-                        disabled={loading} 
-                        className="mt-6 w-full rounded-lg bg-gradient-to-r from-teal-500 to-sky-500 hover:from-teal-600 hover:to-sky-600 disabled:opacity-60 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-                    >
-                        {loading ? "Please wait..." : tab === "login" ? "Sign In" : "Create Account"}
-                    </button>
-                </form>
+                        <form onSubmit={handleLocal} className="space-y-4">
+                            {IS_PUBLIC_SIGNUP_DISABLED && (
+                                <div className="rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs text-cyan-900">
+                                    Invite-only access is enabled. Ask your hospital admin for an invite link, then complete onboarding from that link.
+                                </div>
+                            )}
+                            <div>
+                                <label className="mb-1.5 block text-xs font-semibold text-gray-700">Email</label>
+                                <input
+                                    className={inputClass}
+                                    type="email"
+                                    value={form.email}
+                                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                                />
+                            </div>
 
-                {/* Divider */}
-                <div className="my-6 flex items-center gap-4">
-                    <div className="h-px flex-1 bg-gray-200" />
-                    <span className="text-xs font-medium text-gray-400">or continue with</span>
-                    <div className="h-px flex-1 bg-gray-200" />
-                </div>
+                            <div>
+                                <label className="mb-1.5 block text-xs font-semibold text-gray-700">Password</label>
+                                <input
+                                    className={inputClass}
+                                    type="password"
+                                    value={form.password}
+                                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                                />
+                            </div>
 
-                {/* OAuth Buttons */}
-                <div className="space-y-3">
-                    <a
-                        href={googleLoginUrl()}
-                        className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-1"
-                    >
-                        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
-                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                        </svg>
-                        Continue with Google
-                    </a>
+                            <div className="mt-6">
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full rounded-[10px] bg-[linear-gradient(90deg,#14B8A6,#0EA5E9)] py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:brightness-105 hover:-translate-y-[1px] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+                                >
+                                    {loading ? "Please wait..." : "Sign In"}
+                                </button>
+                            </div>
+                        </form>
 
-                    <a
-                        href={githubLoginUrl()}
-                        className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-1"
-                    >
-                        <Github size={18} />
-                        Continue with GitHub
-                    </a>
+                        <div className="my-6 flex items-center gap-4">
+                            <div className="h-px flex-1 bg-gray-300/70" />
+                            <span className="text-xs font-medium text-gray-500">or continue with linked account</span>
+                            <div className="h-px flex-1 bg-gray-300/70" />
+                        </div>
+                        <p className="mb-3 text-center text-[11px] text-gray-500">
+                            Google/GitHub works for already-approved staff accounts.
+                        </p>
+
+                        <div className="space-y-3">
+                            <a href={googleLoginUrl()} className={socialBtnClass}>
+                                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                                </svg>
+                                Continue with Google
+                            </a>
+
+                            <a href={githubLoginUrl()} className={socialBtnClass}>
+                                <Github size={18} />
+                                Continue with GitHub
+                            </a>
+                        </div>
+
+                        {IS_PUBLIC_SIGNUP_DISABLED && (
+                            <p className="mt-4 text-center text-xs text-gray-500">
+                                Need access? Contact hospital IT at{" "}
+                                <a className="font-semibold text-sky-700 hover:underline" href={`mailto:${SUPPORT_EMAIL}`}>
+                                    {SUPPORT_EMAIL}
+                                </a>
+                                .
+                            </p>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

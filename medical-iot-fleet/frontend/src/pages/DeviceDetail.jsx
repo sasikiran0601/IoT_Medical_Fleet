@@ -18,8 +18,9 @@ export default function DeviceDetail() {
     const [sensorData, setSensorData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [lastReading, setLastReading] = useState(null);
+    const { connected } = useWebSocket();
 
-    const fetchDevice = async () => {
+    const fetchDevice = useCallback(async () => {
         try {
             const [devRes, dataRes] = await Promise.all([
                 getDevice(deviceId),
@@ -30,11 +31,20 @@ export default function DeviceDetail() {
             if (dataRes.data.length) setLastReading(dataRes.data[0]);
         } catch { /* device not found */ }
         finally { setLoading(false); }
-    };
+    }, [deviceId]);
 
-    useEffect(() => { fetchDevice(); }, [deviceId]);
+    useEffect(() => { fetchDevice(); }, [fetchDevice]);
 
-    useWebSocket("sensor_data", useCallback((msg) => {
+    // Fallback polling when realtime websocket is disconnected
+    useEffect(() => {
+        if (connected) return undefined;
+        const timer = setInterval(() => {
+            fetchDevice();
+        }, 5000);
+        return () => clearInterval(timer);
+    }, [connected, fetchDevice]);
+
+    useWebSocket("device_update", useCallback((msg) => {
         if (msg.device_id !== deviceId) return;
         const newRecord = {
             id: Date.now(),
@@ -45,6 +55,15 @@ export default function DeviceDetail() {
         };
         setSensorData((prev) => [newRecord, ...prev].slice(0, 100));
         setLastReading(newRecord);
+        setDevice((prev) =>
+            prev
+                ? {
+                    ...prev,
+                    is_online: msg.is_online ?? true,
+                    last_seen: msg.timestamp ?? prev.last_seen,
+                }
+                : prev
+        );
     }, [deviceId]));
 
     useWebSocket("state_change", useCallback((msg) => {
@@ -65,6 +84,7 @@ export default function DeviceDetail() {
     const lastReadings = lastReading ? (() => {
         try { return JSON.parse(lastReading.readings); } catch { return {}; }
     })() : {};
+    const latestReadingEntries = Object.entries(lastReadings).filter(([key]) => key !== "timestamp");
 
     return (
         <div className="space-y-6">
@@ -97,11 +117,11 @@ export default function DeviceDetail() {
                     <InfoRow icon={Cpu} label="Firmware" value={device.firmware_version} />
                     <InfoRow icon={Clock} label="Registered" value={fmtDate(device.created_at)} />
 
-                    {Object.keys(lastReadings).length > 0 && (
+                    {latestReadingEntries.length > 0 && (
                         <div className="border-t border-border-subtle pt-2">
                             <p className="mb-2 text-xs text-text-muted">Latest Readings</p>
                             <div className="grid grid-cols-2 gap-2">
-                                {Object.entries(lastReadings).map(([k, v]) => (
+                                {latestReadingEntries.map(([k, v]) => (
                                     <div key={k} className="rounded-lg bg-surface-2 p-2 text-center">
                                         <p className="text-xs capitalize text-text-secondary">{k.replace("_", " ")}</p>
                                         <p className="text-base font-bold text-primary-light">{v}</p>
@@ -120,7 +140,7 @@ export default function DeviceDetail() {
                 />
             </div>
 
-            <SensorChart data={sensorData} />
+            <SensorChart data={sensorData} device={device} />
         </div>
     );
 }

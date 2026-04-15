@@ -1,5 +1,7 @@
 fastapi
 uvicorn[standard]
+websockets
+wsproto
 sqlalchemy
 aiosqlite
 python-jose[cryptography]

@@ -1,0 +1,64 @@
+# ── Python ────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+
+# ── Testing ───────────────────────────────────────────────────────────────
+.pytest_cache/
+pytest-cache-files-*/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# ── Environment / Secrets ─────────────────────────────────────────────────
+.env
+.env.example
+*.env.local
+
+# ── Database ──────────────────────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# ── Node / Frontend ───────────────────────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.log
+npm-debug.log*
+
+# ── Docker ────────────────────────────────────────────────────────────────
+docker-compose.override.yml
+
+# ── MQTT ──────────────────────────────────────────────────────────────────
+mosquitto/passwd
+mosquitto/data/
+mosquitto/log/
+
+# ── IDE ───────────────────────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Backups ───────────────────────────────────────────────────────────────
+backups/
+*.db.gz
+
+# ── SSL certs (managed by certbot on server, not committed) ───────────────
+*.pem
+*.key
+*.crt

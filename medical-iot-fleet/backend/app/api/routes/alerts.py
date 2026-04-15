@@ -10,7 +10,7 @@ from app.models.alert import Alert
 from app.models.device import Device
 from app.models.user import User
 from app.schemas.alert import AlertOut
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, require_doctor_or_above
 
 router = APIRouter(prefix="/api/alerts", tags=["Alerts"])
 
@@ -51,7 +51,7 @@ async def unresolved_count(
 async def resolve_alert(
     alert_id: int,
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(require_doctor_or_above),
 ):
     result = await db.execute(select(Alert).where(Alert.id == alert_id))
     alert = result.scalar_one_or_none()
@@ -68,7 +68,7 @@ async def resolve_alert(
 async def delete_alert(
     alert_id: int,
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(require_doctor_or_above),
 ):
     result = await db.execute(select(Alert).where(Alert.id == alert_id))
     alert = result.scalar_one_or_none()

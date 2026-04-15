@@ -1,4 +1,6 @@
 import httpx
+from datetime import datetime
+from urllib.parse import urlencode
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
@@ -6,10 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from app.db.database import get_db
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.user import UserRegister, TokenResponse, UserOut
 from app.core.security import hash_password, verify_password, create_access_token
 from app.core.config import settings
+from app.services.invite_service import get_valid_invite_token
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
@@ -24,6 +27,11 @@ def _make_token_response(user: User) -> dict:
     }
 
 
+def _oauth_error_redirect(message: str) -> RedirectResponse:
+    query = urlencode({"error": message})
+    return RedirectResponse(f"{settings.FRONTEND_URL}/login?{query}")
+
+
 # ── Local Register ─────────────────────────────────────────────────────────
 @router.post("/register", response_model=TokenResponse)
 async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
@@ -31,15 +39,39 @@ async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Email already registered")
 
+    role = "viewer"
+    assigned_floor = data.assigned_floor
+    email_verified = True
+    invite = None
+
+    if settings.PUBLIC_SIGNUP_DISABLED:
+        if not data.invite_token:
+            raise HTTPException(status_code=403, detail="Registration is by invitation only")
+
+        invite = await get_valid_invite_token(db, data.invite_token)
+        if not invite or invite.email.strip().lower() != data.email.strip().lower():
+            raise HTTPException(status_code=403, detail="Invalid or expired invitation")
+
+        valid_roles = {r.value for r in UserRole}
+        role = invite.role if invite.role in valid_roles else "viewer"
+        assigned_floor = invite.assigned_floor
+        email_verified = True
+
     user = User(
         name=data.name,
         email=data.email,
         hashed_password=hash_password(data.password),
-        role=data.role,
-        assigned_floor=data.assigned_floor,
+        role=role,
+        assigned_floor=assigned_floor,
         auth_provider="local",
+        email_verified=email_verified,
     )
     db.add(user)
+
+    if invite:
+        invite.is_used = True
+        invite.used_at = datetime.utcnow()
+
     await db.commit()
     await db.refresh(user)
     return _make_token_response(user)
@@ -90,7 +122,6 @@ async def google_callback(
         raise HTTPException(status_code=501, detail="Google OAuth not configured")
     redirect_uri = str(request.url_for("google_callback"))
 
-    # Exchange code for tokens
     async with httpx.AsyncClient() as client:
         token_resp = await client.post(
             "https://oauth2.googleapis.com/token",
@@ -110,30 +141,39 @@ async def google_callback(
         )
         user_info = user_resp.json()
 
-    email     = user_info.get("email")
-    name      = user_info.get("name", email)
-    oauth_id  = user_info.get("sub")
-    avatar    = user_info.get("picture")
+    email    = user_info.get("email")
+    name     = user_info.get("name", email)
+    oauth_id = user_info.get("sub")
+    avatar   = user_info.get("picture")
 
-    # Find or create user
     result = await db.execute(select(User).where(User.email == email))
     user   = result.scalar_one_or_none()
 
     if not user:
+        if settings.PUBLIC_SIGNUP_DISABLED:
+            return _oauth_error_redirect("Invite required. Contact your admin.")
         user = User(
             name=name,
             email=email,
             auth_provider="google",
             oauth_id=oauth_id,
             avatar_url=avatar,
-            role="viewer",
+            email_verified=True,
+            role="viewer",      # all new OAuth accounts start as viewer
         )
         db.add(user)
         await db.commit()
         await db.refresh(user)
+    elif not user.is_active:
+        return _oauth_error_redirect("Account unavailable. Contact your admin.")
+    else:
+        # Update avatar on every login in case it changed
+        if avatar and user.avatar_url != avatar:
+            user.avatar_url = avatar
+            await db.commit()
+            await db.refresh(user)
 
     token = create_access_token({"sub": user.id, "role": user.role})
-    # Redirect to frontend with token in query param
     return RedirectResponse(f"{settings.FRONTEND_URL}/auth/success?token={token}")
 
 
@@ -180,8 +220,8 @@ async def github_callback(code: str, db: AsyncSession = Depends(get_db)):
             "https://api.github.com/user/emails",
             headers={"Authorization": f"Bearer {access_token}"},
         )
-        emails    = email_resp.json()
-        primary   = next((e["email"] for e in emails if e.get("primary")), None)
+        emails  = email_resp.json()
+        primary = next((e["email"] for e in emails if e.get("primary")), None)
 
     email    = primary or f"github_{user_info['id']}@noemail.com"
     name     = user_info.get("name") or user_info.get("login", "GitHub User")
@@ -192,17 +232,28 @@ async def github_callback(code: str, db: AsyncSession = Depends(get_db)):
     user   = result.scalar_one_or_none()
 
     if not user:
+        if settings.PUBLIC_SIGNUP_DISABLED:
+            return _oauth_error_redirect("Invite required. Contact your admin.")
         user = User(
             name=name,
             email=email,
             auth_provider="github",
             oauth_id=oauth_id,
             avatar_url=avatar,
-            role="viewer",
+            email_verified=True,
+            role="viewer",      # all new OAuth accounts start as viewer
         )
         db.add(user)
         await db.commit()
         await db.refresh(user)
+    elif not user.is_active:
+        return _oauth_error_redirect("Account unavailable. Contact your admin.")
+    else:
+        # Update avatar on every login
+        if avatar and user.avatar_url != avatar:
+            user.avatar_url = avatar
+            await db.commit()
+            await db.refresh(user)
 
     token = create_access_token({"sub": user.id, "role": user.role})
     return RedirectResponse(f"{settings.FRONTEND_URL}/auth/success?token={token}")

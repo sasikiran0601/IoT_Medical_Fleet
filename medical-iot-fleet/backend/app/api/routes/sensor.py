@@ -32,6 +32,12 @@ async def ingest_sensor_data(
 ):
     if device.device_id != device_id:
         raise HTTPException(status_code=403, detail="Device ID mismatch with API key")
+    if not device.is_on:
+        return {
+            "status": "ignored",
+            "reason": "device_off",
+            "timestamp": datetime.utcnow().isoformat(),
+        }
 
     readings = payload
 

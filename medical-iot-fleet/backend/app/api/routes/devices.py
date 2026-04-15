@@ -10,7 +10,7 @@ from app.db.database import get_db
 from app.models.device import Device
 from app.models.user import User
 from app.schemas.device import DeviceCreate, DeviceOut, DeviceUpdate, DeviceControl, WebhookUpdate
-from app.core.dependencies import get_current_user, require_admin
+from app.core.dependencies import get_current_user, require_admin, require_nurse_or_above
 from app.services.device_service import log_action, calculate_session_duration
 from app.services.alert_service import check_long_running
 from app.websockets.manager import manager
@@ -137,7 +137,7 @@ async def control_device(
     device_id: str,
     body: DeviceControl,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_nurse_or_above),
 ):
     result = await db.execute(
         select(Device).where(Device.device_id == device_id)

@@ -5,39 +5,18 @@
     "username": "admin",
     "password": "admin123"
   },
-  "backend_url": "http://localhost:8000",
-  "interval_seconds": 2,
-  "devices": [
-    {
-      "device_id": "DEV-AAAAAAAA",
-      "api_key": "mk_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "type": "ECG",
-      "interval": 2,
-      "comment": "Replace device_id and api_key with values from /api/keys or ApiManager page"
-    },
-    {
-      "device_id": "DEV-BBBBBBBB",
-      "api_key": "mk_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-      "type": "Pulse Oximeter",
-      "interval": 3
-    },
-    {
-      "device_id": "DEV-CCCCCCCC",
-      "api_key": "mk_cccccccccccccccccccccccccccccccccc",
-      "type": "Ventilator",
-      "interval": 4
-    },
-    {
-      "device_id": "DEV-DDDDDDDD",
-      "api_key": "mk_dddddddddddddddddddddddddddddddddd",
-      "type": "Temperature Sensor",
-      "interval": 5
-    },
-    {
-      "device_id": "DEV-EEEEEEEE",
-      "api_key": "mk_eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-      "type": "Blood Pressure",
-      "interval": 6
-    }
-  ]
+  "publish_interval_seconds": 1,
+  "topic_template": "hospital/{floor}/{room_no}/{bed_no}/{device_id}/data",
+  "device": {
+    "floor": "floor1",
+    "room_no": "room101",
+    "bed_no": "bed1",
+    "device_id": "DEV-001",
+    "comment": "Use the same floor/room/bed/device_id in your real ESP32 firmware."
+  },
+  "esp32_real_device": {
+    "enabled": true,
+    "count": 1,
+    "note": "Single real ESP32 publishing to the same topic structure."
+  }
 }

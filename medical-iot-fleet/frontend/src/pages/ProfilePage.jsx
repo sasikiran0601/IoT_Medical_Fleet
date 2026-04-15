@@ -171,7 +171,13 @@ export default function ProfilePage() {
     const handleExport = async () => {
         try {
             const res = await api.get(`/api/logs/audit?limit=500`);
-            const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: "application/json" });
+            const compactAudit = (res.data || []).map((row) => ({
+                timestamp: row.timestamp ?? null,
+                device_id: row.device_id ?? null,
+                action: row.action ?? null,
+                purpose: row.purpose ?? null,
+            }));
+            const blob = new Blob([JSON.stringify(compactAudit, null, 2)], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url; a.download = "my_audit_data.json"; a.click();
@@ -412,7 +418,7 @@ export default function ProfilePage() {
                 {/* Data export */}
                 <ActionRow
                     label="Data export"
-                    sub="Request all of your data in JSON format"
+                    sub="Export compact audit data (timestamp, device_id, action, purpose)"
                     action="EXPORT"
                     actionStyle={{ color: "var(--primary-light)" }}
                     onAction={handleExport}

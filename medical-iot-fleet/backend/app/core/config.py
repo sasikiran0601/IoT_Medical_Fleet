@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     GITHUB_CLIENT_SECRET: Optional[str] = None
 
     FRONTEND_URL: str = "http://localhost:5173"
+    PUBLIC_SIGNUP_DISABLED: bool = True
+    INVITE_TOKEN_EXPIRE_HOURS: int = 72
+    INVITE_ACCEPT_URL: Optional[str] = None
 
     # SMTP
     SMTP_HOST: str = "smtp.gmail.com"
@@ -30,6 +33,18 @@ class Settings(BaseSettings):
     MQTT_PORT: int = 1883
     MQTT_USERNAME: str = "admin"
     MQTT_PASSWORD: str = "admin123"
+    MQTT_MIN_INGEST_INTERVAL_MS: int = 1000
+    MQTT_ECG_MIN_INGEST_INTERVAL_MS: int = 120
+    MQTT_PROCESS_MAX_CONCURRENCY: int = 1
+    MQTT_ANOMALY_ALERT_COOLDOWN_SECONDS: int = 30
+    DEVICE_OFFLINE_SECONDS: int = 5
+    DEVICE_PRESENCE_SWEEP_SECONDS: int = 5
+
+    # DB Pool (critical when using hosted Postgres poolers)
+    DB_POOL_SIZE: int = 3
+    DB_MAX_OVERFLOW: int = 2
+    DB_POOL_TIMEOUT_SECONDS: int = 30
+    DB_POOL_RECYCLE_SECONDS: int = 1800
 
     @model_validator(mode="after")
     def validate_security_settings(self):

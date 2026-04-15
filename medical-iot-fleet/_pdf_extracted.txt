@@ -1,0 +1,191 @@
+
+
+===== PAGE 1 =====
+Medical IoT Device Fleet Management System 
+with OTA Updates and Intelligent Monitoring
+Team Details
+Team Member 1: Gangala Rohith Kumar (Roll No: 1602-23-733-101)
+Team Member 2: Sohan Roy Talari (Roll No: 1602-23-733-119)
+Team Member 3: Navadeep (Roll No: 1602-23-735-083)
+Team Member 4: Sasi Kiran (Roll No: 1602-23-735-124)
+Project Guide
+Dr. S. Vinay Kumar - Assistant Professor - CSE
+Mr. V. Krishna Mohan - Assistant Professor - ECE
+
+===== PAGE 2 =====
+Problem Statement
+Hospitals rely on multiple critical medical devices for continuous patient care,
+yet monitoring and managing these devices across different floors and rooms
+remains challenging. Device failures, connectivity issues, or firmware errors
+may go unnoticed until they disrupt operations, affecting efficiency and
+potentially compromising patient safety.
+In many healthcare settings, monitoring is periodic and manual, and
+centralized lifecycle management is limited. There is a need for a system that
+can continuously monitor device status, track usage, detect abnormal
+behavior, and ensure timely firmware updates to maintain reliable and
+efficient medical device operations.
+
+===== PAGE 3 =====
+Objectives
+• Develop a centralized system to monitor and manage medical IoT devices
+deployed across hospital environments.
+• Continuously track device telemetry such as operational status,
+connectivity, power levels, and sensor readings.
+• Design an IoT-based communication system using ESP32 devices and
+MQTT for real-time data transmission.
+• Perform structured health checks to detect device faults, abnormal
+behavior, or performance degradation.
+• Provide alerts, usage tracking, and OTA firmware updates to improve device
+reliability and lifecycle management.
+
+===== PAGE 4 =====
+Novelty
+• Medical device monitoring in hospitals is often performed manually or through 
+vendor specific systems.
+• Many devices are monitored individually, and status checks are done 
+periodically by technical staff.
+• In several cases, faults or performance issues are identified only after a 
+malfunction or downtime occurs.
+• Existing enterprise IoT platforms provide fleet management, but they are often 
+expensive, proprietary, and dependent on specific hardware ecosystems.
+• Smaller healthcare institutions may lack centralized systems for real-time 
+monitoring, usage auditing, and firmware management.
+• Hence, there is a need for a customizable, centralized, and cost-effective system 
+for continuous monitoring and intelligent management of medical device fleets.
+
+===== PAGE 5 =====
+Methodology
+• Continuously monitor real-time device telemetry such as temperature,
+pulse, or other sensor data from medical IoT devices.
+• Track device operational status through periodic heartbeat signals to
+verify whether devices are functioning properly.
+• Collect and process sensor and status data using ESP32-based embedded
+systems.
+• Transmit device data wirelessly using MQTT protocol to a centralized
+backend server.
+• Analyze device performance using health scoring and anomaly detection
+to identify abnormal behavior or potential failures.
+• Provide alerts and notifications to administrators or medical staff when
+devices go offline, exceed operational thresholds, or show warning-level
+health scores.
+• Support remote device control and Over-The-Air (OTA) firmware updates
+for efficient lifecycle management.
+
+===== PAGE 6 =====
+Expected Outcomes
+• Development of a functional prototype of a Medical IoT Device Fleet
+Management System capable of monitoring the status and telemetry of
+connected medical devices.
+• A real-time monitoring platform that tracks device connectivity,
+operational parameters, and sensor data through a centralized dashboard.
+• Implementation of structured health checks to detect abnormal device
+behavior, connectivity issues, or potential failures.
+• Generation of alerts and logs to notify administrators about offline
+devices, abnormal conditions, or maintenance requirements.
+• A scalable and cost-effective prototype that demonstrates centralized
+monitoring, OTA updates, and efficient lifecycle management of medical
+IoT devices.
+
+===== PAGE 7 =====
+Prototype details
+
+
+===== PAGE 8 =====
+Hardware and Software
+Requirements
+Hardware:
+• ESP32 Development Board
+• Medical sensor modules (e.g., 
+Temperature sensor 
+DS18B20, Pulse/ECG sensor 
+optional)
+• Resistors and basic supporting 
+components
+• Breadboard and connecting 
+wires
+• Power supply (USB / regulated 
+power module)
+• WiFi network for IoT 
+communication
+Software:
+• Arduino IDE (for ESP32 
+firmware development)
+• MQTT Broker (e.g., Mosquitto)
+• Backend Framework (Node.js)
+• Database (MongoDB)
+• Frontend Framework (React 
+for dashboard development)
+• Machine Learning tools 
+(Python, scikit-learn for health 
+scoring and anomaly 
+detection)
+• Email/Notification service 
+(SMTP for alerts)
+
+===== PAGE 9 =====
+
+
+===== PAGE 10 =====
+Project Timeline
+Phase Activity Duration
+Phase 1
+Literature review, system architecture design, and
+technology selection (IoT protocols, backend
+framework)
+Week 1–2
+Phase 2 Hardware setup and ESP32 firmware development
+for sensor integration and MQTT communication Week 3–4
+Phase 3 Backend development, database setup, and real-
+time data processing implementation Week 5–7
+Phase 4 Web dashboard development and integration with
+device monitoring system Week 8–10
+Phase 5 System testing, device health check
+implementation, and performance optimization Week 11–12
+
+===== PAGE 11 =====
+Budget Estimation
+Component Quantity Approx Cost (INR)
+ESP32 Development Board 3 ₹1200
+DS18B20 Temperature Sensor 2 ₹200
+Pulse Sensor Module 1 ₹180
+MAX30102 Pulse Oximeter Sensor 1 ₹250
+Breadboard 1 ₹150
+Jumper Wires 1 Set ₹120
+Resistors Few ₹50
+USB Cable 3 ₹150
+TOTAL ₹2,190
+
+===== PAGE 12 =====
+Scope of Proposal
+• The proposed system enables centralized monitoring and management of
+medical IoT devices deployed across hospital environments, improving visibility
+of device status and operational reliability.
+• The system can be further enhanced by integrating advanced analytics and
+predictive maintenance techniques to identify potential device failures before
+they occur.
+• It can support long-term device data tracking, allowing administrators to
+analyze performance trends, usage patterns, and maintenance history over
+time.
+• The solution has potential applications in hospitals, healthcare facilities, and
+biomedical equipment management systems, supporting efficient device
+lifecycle management and improved healthcare infrastructure monitoring.
+
+
+===== PAGE 13 =====
+Conclusion
+• Medical device reliability is critical for effective hospital
+operations and patient safety.
+• Manual and periodic monitoring can delay the detection of device
+faults or performance degradation.
+• The proposed Medical IoT Device Fleet Management System
+enables continuous real-time monitoring, centralized control, and
+structured device management.
+• By integrating MQTT communication, OTA firmware updates,
+usage auditing and the system supports proactive maintenance
+and intelligent supervision.
+• This approach enhances operational efficiency, reduces
+unexpected downtime, and demonstrates a scalable prototype for
+modern medical IoT fleet management.
+
+===== PAGE 14 =====
+Thank You
