@@ -1,5 +1,6 @@
 import { createContext, useEffect, useRef, useState, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
+import { getApiBaseUrl, getWsBaseUrl } from "../utils/runtimeApi";
 
 export const WebSocketContext = createContext(null);
 
@@ -17,9 +18,9 @@ function toWsUrl(httpLikeUrl) {
 function buildWsCandidates() {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
     const sameHostProxy = `${protocol}://${window.location.host}/ws/dashboard`;
-    const apiBase = import.meta.env.VITE_API_URL || "http://localhost:8000";
+    const apiBase = getApiBaseUrl();
     const directApi = toWsUrl(apiBase);
-    const explicitWsBase = import.meta.env.VITE_WS_URL || "";
+    const explicitWsBase = getWsBaseUrl();
     const explicitWs = explicitWsBase
         ? `${explicitWsBase.replace(/\/$/, "")}/ws/dashboard`
         : "";

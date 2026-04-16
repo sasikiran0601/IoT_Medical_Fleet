@@ -1,4 +1,5 @@
 import api from "./axiosInstance";
+import { getApiBaseUrl } from "../utils/runtimeApi";
 
 export const loginLocal = (email, password) =>
     api.post("/api/auth/login", new URLSearchParams({ username: email, password }), {
@@ -12,5 +13,5 @@ export const registerWithInvite = (data, inviteToken) =>
 export const getMe = () => api.get("/api/auth/me");
 export const validateInvite = (token) => api.get(`/api/invites/validate?token=${encodeURIComponent(token)}`);
 
-export const googleLoginUrl = (role) => `${import.meta.env.VITE_API_URL}/api/auth/google${role ? `?role=${role}` : ""}`;
-export const githubLoginUrl = (role) => `${import.meta.env.VITE_API_URL}/api/auth/github${role ? `?role=${role}` : ""}`;
+export const googleLoginUrl = (role) => `${getApiBaseUrl()}/api/auth/google${role ? `?role=${role}` : ""}`;
+export const githubLoginUrl = (role) => `${getApiBaseUrl()}/api/auth/github${role ? `?role=${role}` : ""}`;
