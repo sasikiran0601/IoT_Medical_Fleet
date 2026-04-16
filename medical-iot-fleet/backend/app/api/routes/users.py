@@ -22,6 +22,7 @@ async def _active_admin_count(db: AsyncSession) -> int:
     return int(result.scalar() or 0)
 
 
+@router.get("", response_model=List[UserOut], include_in_schema=False)
 @router.get("/", response_model=List[UserOut])
 async def list_users(
     db: AsyncSession = Depends(get_db),

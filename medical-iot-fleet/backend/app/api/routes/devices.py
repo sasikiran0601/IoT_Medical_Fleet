@@ -18,6 +18,7 @@ from app.websockets.manager import manager
 router = APIRouter(prefix="/api/devices", tags=["Devices"])
 
 
+@router.post("", response_model=DeviceOut, include_in_schema=False)
 @router.post("/", response_model=DeviceOut)
 async def create_device(
     data: DeviceCreate,
@@ -39,6 +40,7 @@ async def create_device(
     return device
 
 
+@router.get("", response_model=List[DeviceOut], include_in_schema=False)
 @router.get("/", response_model=List[DeviceOut])
 async def list_devices(
     room_id: Optional[str] = None,

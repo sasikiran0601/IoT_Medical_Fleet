@@ -16,6 +16,7 @@ from app.services.invite_service import create_invite_token, get_valid_invite_to
 router = APIRouter(prefix="/api/invites", tags=["Invites"])
 
 
+@router.post("", response_model=InviteOut, include_in_schema=False)
 @router.post("/", response_model=InviteOut)
 async def create_invite(
     data: InviteCreate,
@@ -53,6 +54,7 @@ async def create_invite(
     return invite
 
 
+@router.get("", response_model=list[InviteOut], include_in_schema=False)
 @router.get("/", response_model=list[InviteOut])
 async def list_invites(
     db: AsyncSession = Depends(get_db),

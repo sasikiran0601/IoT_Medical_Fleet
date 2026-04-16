@@ -11,6 +11,7 @@ from app.core.dependencies import get_current_user, require_admin
 router = APIRouter(prefix="/api/keys", tags=["API Keys"])
 
 
+@router.get("", include_in_schema=False)
 @router.get("/")
 async def list_api_keys(
     db: AsyncSession = Depends(get_db),
