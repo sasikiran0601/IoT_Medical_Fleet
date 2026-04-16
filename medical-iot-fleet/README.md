@@ -54,7 +54,7 @@ cd backend
 python -m venv venv
 source venv/bin/activate          # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env              # edit as needed
+nano .env                         # create/edit backend env
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -62,7 +62,7 @@ uvicorn app.main:app --reload --port 8000
 ```bash
 cd frontend
 npm install
-cp .env.example .env
+nano .env                         # create/edit frontend env
 npm run dev                       # starts at http://localhost:5173
 ```
 
@@ -80,23 +80,20 @@ python device_sim.py
 
 ---
 
-## Docker Compose (Backend + MQTT + Postgres)
+## Docker Compose (Backend + MQTT)
 
 This repository includes a ready Compose stack:
 - `backend` (FastAPI)
 - `mosquitto` (MQTT broker)
-- `db` (Postgres)
 
 ### 1. Prepare environment files
 ```bash
 # From repo root
-cp .env.example .env
-cp backend/.env.docker.example backend/.env.docker
+nano backend/.env.docker
 ```
 
 Update values in:
-- `.env` (Postgres + MQTT credentials used by Compose services)
-- `backend/.env.docker` (`SECRET_KEY`, `FRONTEND_URL`, OAuth/SMTP if needed)
+- `backend/.env.docker` (`DATABASE_URL`, `SECRET_KEY`, `FRONTEND_URL`, `MQTT_USERNAME`, `MQTT_PASSWORD`)
 
 ### 2. Start services
 ```bash
@@ -108,7 +105,6 @@ docker compose ps
 ```bash
 docker compose logs -f backend
 docker compose logs -f mosquitto
-docker compose logs -f db
 ```
 
 ### 4. Stop services
@@ -163,8 +159,6 @@ Then update `nginx/default.conf` with your domain name.
 ### Step 5 — Start services
 ```bash
 cd /home/ubuntu/medical-iot-fleet
-cp .env.example .env
-cp backend/.env.docker.example backend/.env.docker
 nano backend/.env.docker   # set SECRET_KEY, FRONTEND_URL, optional OAuth/SMTP
 docker compose up -d --build
 docker compose ps

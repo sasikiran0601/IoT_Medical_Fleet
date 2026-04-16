@@ -1,33 +1,25 @@
 services:
-  db:
-    image: postgres:16-alpine
-    container_name: medical_iot_db
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-medical_iot}
-      POSTGRES_USER: ${POSTGRES_USER:-medical_iot}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-medical_iot} -d ${POSTGRES_DB:-medical_iot}" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    restart: unless-stopped
-
   mosquitto:
-  image: eclipse-mosquitto:2
-  container_name: medical_iot_mqtt
-  volumes:
-    - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
-    - ./mosquitto/passwd:/mosquitto/config/passwd:ro
-    - mosquitto_data:/mosquitto/data
-    - mosquitto_log:/mosquitto/log
-  ports:
-    - "1883:1883"
-  restart: unless-stopped
+    image: eclipse-mosquitto:2
+    container_name: medical_iot_mqtt
+    env_file:
+      - backend/.env.docker
+    command: >
+      sh -ec "
+      if [ ! -f /mosquitto/data/passwd ]; then
+        mosquitto_passwd -b -c /mosquitto/data/passwd \"$$MQTT_USERNAME\" \"$$MQTT_PASSWORD\";
+      else
+        mosquitto_passwd -b /mosquitto/data/passwd \"$$MQTT_USERNAME\" \"$$MQTT_PASSWORD\";
+      fi;
+      exec mosquitto -c /mosquitto/config/mosquitto.conf
+      "
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+    ports:
+      - "1883:1883"
+    restart: unless-stopped
 
   backend:
     build:
@@ -35,25 +27,17 @@ services:
       dockerfile: backend/Dockerfile
     container_name: medical_iot_backend
     depends_on:
-      db:
-        condition: service_healthy
       mosquitto:
         condition: service_started
     env_file:
-      - backend/.env.docker.example
-      - path: backend/.env.docker
-        required: false
+      - backend/.env.docker
     environment:
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-medical_iot}:${POSTGRES_PASSWORD:-change-me}@db:5432/${POSTGRES_DB:-medical_iot}
       MQTT_HOST: mosquitto
       MQTT_PORT: 1883
-      MQTT_USERNAME: ${MQTT_USERNAME:-admin}
-      MQTT_PASSWORD: ${MQTT_PASSWORD:-change-me}
     ports:
       - "8000:8000"
     restart: unless-stopped
 
 volumes:
-  postgres_data:
   mosquitto_data:
   mosquitto_log:
