@@ -74,9 +74,9 @@ export default function Sidebar() {
                             <span
                                 className="block whitespace-nowrap text-lg leading-none tracking-[-0.012em]"
                                 style={{
-                                    color: "#0f172a",
-                                    fontFamily: "Inter, 'Segoe UI', sans-serif",
-                                    fontWeight: 650,
+                                    color: "#1e293b",
+                                    fontFamily: "Poppins, 'Plus Jakarta Sans', Inter, 'Segoe UI', sans-serif",
+                                    fontWeight: 600,
                                     transform: "translateY(0.5px)",
                                 }}
                             >
