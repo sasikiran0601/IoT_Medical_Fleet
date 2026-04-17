@@ -24,7 +24,7 @@ export default function Sidebar() {
     const wrapperRef = useRef(null);
     const isAdmin = user?.role === "admin";
     const userRole = user?.role || "viewer";
-    const sidebarWidth = collapsed ? 60 : 190;
+    const sidebarWidth = collapsed ? 60 : 170;
 
     useEffect(() => {
         const handleMouseMove = (event) => {
@@ -105,9 +105,8 @@ export default function Sidebar() {
                                         }
                                         : { color: "#475569" }
                                 }
-                                className={`flex items-center gap-2.5 rounded-lg text-[14px] font-medium transition-all duration-150 hover:bg-[#eef4fa] ${
-                                    collapsed ? "h-9 justify-center px-0" : "px-2.5 py-2"
-                                }`}
+                                className={`flex items-center gap-2.5 rounded-lg text-[14px] font-medium transition-all duration-150 hover:bg-[#eef4fa] ${collapsed ? "h-9 justify-center px-0" : "px-2.5 py-2"
+                                    }`}
                             >
                                 {({ isActive }) => (
                                     <>
