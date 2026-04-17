@@ -32,6 +32,22 @@ def _oauth_error_redirect(message: str) -> RedirectResponse:
     return RedirectResponse(f"{settings.FRONTEND_URL}/login?{query}")
 
 
+def _resolve_oauth_redirect_uri(request: Request, provider: str) -> str:
+    if provider == "google" and settings.GOOGLE_REDIRECT_URI:
+        return settings.GOOGLE_REDIRECT_URI.strip()
+    if provider == "github" and settings.GITHUB_REDIRECT_URI:
+        return settings.GITHUB_REDIRECT_URI.strip()
+
+    callback_name = "google_callback" if provider == "google" else "github_callback"
+    redirect_uri = str(request.url_for(callback_name))
+
+    forwarded_proto = request.headers.get("x-forwarded-proto", "").split(",")[0].strip().lower()
+    if forwarded_proto == "https" and redirect_uri.startswith("http://"):
+        redirect_uri = "https://" + redirect_uri[len("http://"):]
+
+    return redirect_uri
+
+
 # ── Local Register ─────────────────────────────────────────────────────────
 @router.post("/register", response_model=TokenResponse)
 async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
@@ -101,7 +117,7 @@ async def login(
 async def google_login(request: Request):
     if not settings.GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=501, detail="Google OAuth not configured")
-    redirect_uri = str(request.url_for("google_callback"))
+    redirect_uri = _resolve_oauth_redirect_uri(request, "google")
     params = (
         "https://accounts.google.com/o/oauth2/v2/auth"
         f"?client_id={settings.GOOGLE_CLIENT_ID}"
@@ -120,7 +136,7 @@ async def google_callback(
 ):
     if not settings.GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=501, detail="Google OAuth not configured")
-    redirect_uri = str(request.url_for("google_callback"))
+    redirect_uri = _resolve_oauth_redirect_uri(request, "google")
 
     async with httpx.AsyncClient() as client:
         token_resp = await client.post(
@@ -182,7 +198,7 @@ async def google_callback(
 async def github_login(request: Request):
     if not settings.GITHUB_CLIENT_ID:
         raise HTTPException(status_code=501, detail="GitHub OAuth not configured")
-    redirect_uri = str(request.url_for("github_callback"))
+    redirect_uri = _resolve_oauth_redirect_uri(request, "github")
     url = (
         "https://github.com/login/oauth/authorize"
         f"?client_id={settings.GITHUB_CLIENT_ID}"
