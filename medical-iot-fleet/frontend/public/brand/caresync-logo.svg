@@ -1,40 +1,39 @@
 <svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="careStroke" x1="13" y1="16" x2="84" y2="82" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#646A84" />
-      <stop offset="0.52" stop-color="#7EA9B5" />
-      <stop offset="1" stop-color="#9EE4DB" />
+    <linearGradient id="careStroke" x1="14" y1="14" x2="82" y2="82" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#334155" />
+      <stop offset="1" stop-color="#0F94A6" />
     </linearGradient>
   </defs>
 
   <path
-    d="M17 35C20 22 32 13 46 13C62 13 75 23 80 38"
+    d="M16 36C20 23 32 15 46 15C61 15 74 24 79 38"
     stroke="url(#careStroke)"
-    stroke-width="5.5"
+    stroke-width="5.2"
     stroke-linecap="round"
     stroke-linejoin="round"
   />
 
   <path
-    d="M79 62C74 76 61 84 46 84C31 84 18 75 14 60"
+    d="M80 60C75 74 62 82 47 82C32 82 20 74 15 61"
     stroke="url(#careStroke)"
-    stroke-width="5.5"
+    stroke-width="5.2"
     stroke-linecap="round"
     stroke-linejoin="round"
   />
 
   <path
-    d="M48 63C39 57 33 51 33 43C33 37 38 32 44 32C48 32 51 34 53 37C55 34 58 32 62 32C68 32 73 37 73 43C73 51 67 57 58 63"
+    d="M48 63L40 56C35 51 31 47 31 41C31 35.8 35.2 31.8 40.5 31.8C44 31.8 46.8 33.6 48 36.2C49.2 33.6 52 31.8 55.5 31.8C60.8 31.8 65 35.8 65 41C65 47 61 51 56 56L48 63Z"
     stroke="url(#careStroke)"
-    stroke-width="5"
+    stroke-width="4.8"
     stroke-linecap="round"
     stroke-linejoin="round"
   />
 
   <path
-    d="M39 48H45L48.5 43L52.5 53L56.5 48H62"
+    d="M37 46H42.5L46.5 41L50.5 52L54.5 46H60"
     stroke="url(#careStroke)"
-    stroke-width="3.4"
+    stroke-width="3.3"
     stroke-linecap="round"
     stroke-linejoin="round"
   />
