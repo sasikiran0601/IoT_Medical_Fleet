@@ -2,6 +2,25 @@ import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
 const BRAND_LOGO_SRC = "/brand/caresync-logo.svg";
+const COLLAPSED_STROKE = "#18BED6";
+const COLLAPSED_PATHS = [
+    {
+        d: "M16 36C20 23 32 15 46 15C61 15 74 24 79 38",
+        width: 5.2,
+    },
+    {
+        d: "M80 60C75 74 62 82 47 82C32 82 20 74 15 61",
+        width: 5.2,
+    },
+    {
+        d: "M48 63L40 56C35 51 31 47 31 41C31 35.8 35.2 31.8 40.5 31.8C44 31.8 46.8 33.6 48 36.2C49.2 33.6 52 31.8 55.5 31.8C60.8 31.8 65 35.8 65 41C65 47 61 51 56 56L48 63Z",
+        width: 4.8,
+    },
+    {
+        d: "M37 46H42.5L46.5 41L50.5 52L54.5 46H60",
+        width: 3.3,
+    },
+];
 
 function StaticLogo({ size, className }) {
     return (
@@ -28,77 +47,78 @@ export default function CareSyncLogoAnimated({ collapsed, size = 40, className =
         wasCollapsed.current = collapsed;
     }, [collapsed]);
 
-    if (!collapsed || prefersReducedMotion) {
+    if (!collapsed) {
         return <StaticLogo size={size} className={className} />;
     }
 
-    const gradientId = `careSyncLogoGradient-${sequenceId}`;
+    if (prefersReducedMotion) {
+        return (
+            <svg
+                width={size}
+                height={size}
+                viewBox="0 0 96 96"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className={className}
+                style={{ width: size, height: size, objectFit: "contain" }}
+                aria-hidden="true"
+            >
+                {COLLAPSED_PATHS.map((path) => (
+                    <path
+                        key={path.d}
+                        d={path.d}
+                        stroke={COLLAPSED_STROKE}
+                        strokeWidth={path.width}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    />
+                ))}
+            </svg>
+        );
+    }
 
     return (
         <motion.svg
             key={`collapse-seq-${sequenceId}`}
             width={size}
             height={size}
-            viewBox="0 0 64 64"
+            viewBox="0 0 96 96"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
             className={className}
             style={{ width: size, height: size, objectFit: "contain" }}
-            initial={{ scale: 0.96, opacity: 0.9 }}
+            initial={{ scale: 0.96, opacity: 0.94 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
             aria-hidden="true"
         >
-            <defs>
-                <linearGradient id={gradientId} x1="10" y1="54" x2="54" y2="10" gradientUnits="userSpaceOnUse">
-                    <stop offset="0" stopColor="#16A085" />
-                    <stop offset="0.55" stopColor="#2DBBD4" />
-                    <stop offset="1" stopColor="#5A8FC9" />
-                </linearGradient>
-            </defs>
-
             <motion.circle
-                cx="32"
-                cy="32"
-                r="2.1"
-                fill={`url(#${gradientId})`}
-                initial={{ scale: 0.15, opacity: 0.95 }}
-                animate={{ scale: [0.15, 1.25, 0], opacity: [0.95, 0.85, 0] }}
-                transition={{ duration: 0.34, ease: "easeOut", times: [0, 0.45, 1] }}
+                cx="48"
+                cy="48"
+                r="2.4"
+                fill={COLLAPSED_STROKE}
+                initial={{ scale: 0.14, opacity: 0.96 }}
+                animate={{ scale: [0.14, 1.2, 0], opacity: [0.96, 0.84, 0] }}
+                transition={{ duration: 0.32, ease: "easeOut", times: [0, 0.45, 1] }}
             />
 
-            <motion.path
-                d="M32 8A24 24 0 1 1 32 56A24 24 0 1 1 32 8Z"
-                stroke={`url(#${gradientId})`}
-                strokeWidth="4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ delay: 0.08, duration: 0.45, ease: "easeOut" }}
-            />
-
-            <motion.path
-                d="M32 40L26 34C22.4 30.4 22.4 24.6 26 21C29.6 17.4 35.4 17.4 39 21C42.6 24.6 42.6 30.4 39 34L32 40Z"
-                stroke={`url(#${gradientId})`}
-                strokeWidth="3.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ delay: 0.26, duration: 0.4, ease: "easeOut" }}
-            />
-
-            <motion.path
-                d="M25 29H29L31 25L34 33L36.5 29H40"
-                stroke={`url(#${gradientId})`}
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ delay: 0.42, duration: 0.32, ease: "easeOut" }}
-            />
+            {COLLAPSED_PATHS.map((path, index) => (
+                <motion.path
+                    key={`${sequenceId}-${index}`}
+                    d={path.d}
+                    stroke={COLLAPSED_STROKE}
+                    strokeWidth={path.width}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    animate={{ pathLength: 1, opacity: 1 }}
+                    transition={{
+                        delay: 0.08 + index * 0.1,
+                        duration: 0.42,
+                        ease: "easeOut",
+                    }}
+                />
+            ))}
         </motion.svg>
     );
 }
