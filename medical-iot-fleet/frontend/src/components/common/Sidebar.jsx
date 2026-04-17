@@ -65,8 +65,8 @@ export default function Sidebar() {
             >
                 <div className="flex h-16 shrink-0 items-center gap-3 px-4">
                     <img
-                        src="/brand/iot-vitals-logo.svg"
-                        alt="IoT Vitals Logo"
+                        src="/brand/caresync-logo.svg"
+                        alt="CareSync Logo"
                         className="h-10 w-10 shrink-0 rounded-xl object-contain"
                         style={{ boxShadow: "0 6px 16px rgba(14,165,233,0.24)" }}
                     />
@@ -79,7 +79,7 @@ export default function Sidebar() {
                                     fontFamily: "'Plus Jakarta Sans', Inter, sans-serif",
                                 }}
                             >
-                                IoT Vitals
+                                CareSync
                             </p>
                         </div>
                     )}
