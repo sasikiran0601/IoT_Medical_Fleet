@@ -64,7 +64,7 @@ export default function Sidebar() {
                 }}
             >
                 <div className="flex h-16 shrink-0 items-center px-3">
-                    <div className={`flex items-center ${collapsed ? "justify-center w-full" : "gap-3"}`}>
+                    <div className={`flex items-center ${collapsed ? "justify-center w-full" : "gap-0"}`}>
                         <img
                             src="/brand/caresync-logo.svg?v=20260417a"
                             alt="CareSync Logo"
