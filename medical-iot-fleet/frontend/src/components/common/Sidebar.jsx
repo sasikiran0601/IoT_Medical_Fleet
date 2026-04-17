@@ -24,7 +24,7 @@ export default function Sidebar() {
     const wrapperRef = useRef(null);
     const isAdmin = user?.role === "admin";
     const userRole = user?.role || "viewer";
-    const sidebarWidth = collapsed ? 64 : 220;
+    const sidebarWidth = collapsed ? 60 : 210;
 
     useEffect(() => {
         const handleMouseMove = (event) => {
@@ -55,37 +55,38 @@ export default function Sidebar() {
                 className="flex h-full flex-col transition-all duration-300"
                 style={{
                     width: "100%",
-                    background: "linear-gradient(180deg, #ffffff 0%, #f3f8fc 60%, #eaf4fb 100%)",
-                    borderRight: "none",
-                    boxShadow: "4px 0 24px -4px rgba(14,165,233,0.10), 2px 0 8px -2px rgba(20,184,166,0.08)",
+                    background: "linear-gradient(180deg, #ffffff 0%, #f8fbfe 62%, #f2f7fc 100%)",
+                    borderRight: "1px solid #e2e8f0",
+                    boxShadow: "2px 0 12px rgba(15,23,42,0.06)",
                     position: "relative",
                     zIndex: 20,
                     transition: "all 0.2s ease",
                 }}
             >
-                <div className="flex h-16 shrink-0 items-center gap-3 px-4">
-                    <img
-                        src="/brand/caresync-logo.svg"
-                        alt="CareSync Logo"
-                        className="h-10 w-10 shrink-0 rounded-xl object-contain"
-                        style={{ boxShadow: "0 6px 16px rgba(14,165,233,0.24)" }}
-                    />
-                    {!collapsed && (
-                        <div className="min-w-0 overflow-hidden">
-                            <p
-                                className="whitespace-nowrap text-sm font-bold leading-none"
+                <div className="flex h-16 shrink-0 items-center px-3">
+                    <div className={`flex items-center ${collapsed ? "justify-center w-full" : "gap-3"}`}>
+                        <img
+                            src="/brand/caresync-logo.svg"
+                            alt="CareSync Logo"
+                            className="h-9 w-9 shrink-0 object-contain"
+                        />
+                        {!collapsed && (
+                            <span
+                                className="block whitespace-nowrap text-lg leading-none tracking-[-0.012em]"
                                 style={{
-                                    color: "var(--text-primary)",
-                                    fontFamily: "'Plus Jakarta Sans', Inter, sans-serif",
+                                    color: "#0f172a",
+                                    fontFamily: "Inter, 'Segoe UI', sans-serif",
+                                    fontWeight: 650,
+                                    transform: "translateY(0.5px)",
                                 }}
                             >
                                 CareSync
-                            </p>
-                        </div>
-                    )}
+                            </span>
+                        )}
+                    </div>
                 </div>
 
-                <nav className={`flex-1 space-y-0.5 overflow-y-auto px-2 py-2 ${collapsed ? "pt-4" : ""}`}>
+                <nav className={`flex-1 space-y-1 overflow-y-auto px-2 py-2 ${collapsed ? "pt-3" : ""}`}>
                     {NAV.map(({ to, icon: Icon, label, adminOnly, roles }) => {
                         if (adminOnly && !isAdmin) return null;
                         if (roles && !roles.includes(userRole)) return null;
@@ -98,25 +99,25 @@ export default function Sidebar() {
                                 style={({ isActive }) =>
                                     isActive
                                         ? {
-                                            background: "linear-gradient(135deg, #14B8A6, #0EA5E9)",
-                                            boxShadow: "0 4px 14px rgba(14,165,233,0.28)",
+                                            background: "linear-gradient(135deg, #0ea5b7, #0284c7)",
+                                            boxShadow: "0 3px 10px rgba(2,132,199,0.28)",
                                             color: "#fff",
                                         }
-                                        : { color: "#6B7280" }
+                                        : { color: "#475569" }
                                 }
-                                className={`flex items-center gap-3 rounded-xl text-sm font-medium transition-all duration-150 hover:bg-[#F1F5F9] ${
-                                    collapsed ? "h-10 justify-center px-0" : "px-3 py-2.5"
+                                className={`flex items-center gap-2.5 rounded-lg text-[14px] font-medium transition-all duration-150 hover:bg-[#eef4fa] ${
+                                    collapsed ? "h-9 justify-center px-0" : "px-2.5 py-2"
                                 }`}
                             >
                                 {({ isActive }) => (
                                     <>
                                         <Icon
-                                            size={16}
+                                            size={15}
                                             className="shrink-0"
                                             style={{ color: isActive ? "#fff" : "var(--text-muted)" }}
                                         />
                                         {!collapsed && (
-                                            <span style={{ color: isActive ? "#fff" : "var(--text-secondary)" }}>
+                                            <span className="whitespace-nowrap" style={{ color: isActive ? "#fff" : "var(--text-secondary)" }}>
                                                 {label}
                                             </span>
                                         )}
@@ -127,7 +128,10 @@ export default function Sidebar() {
                     })}
                 </nav>
 
-                <div className="shrink-0 space-y-1 px-2 py-3">
+                <div
+                    className="shrink-0 space-y-1.5 px-2.5 py-2.5"
+                    style={{ borderTop: "1px solid rgba(148,163,184,0.16)" }}
+                >
                     {["admin", "doctor", "nurse"].includes(userRole) && (
                         <NavLink
                             to="/alerts"
@@ -137,16 +141,16 @@ export default function Sidebar() {
                                     ? { background: "var(--primary-bg)", color: "var(--primary)" }
                                     : { color: "var(--text-muted)" }
                             }
-                            className={`flex items-center gap-3 rounded-xl text-sm transition-all ${collapsed ? "h-10 justify-center px-0" : "px-3 py-2"}`}
+                            className={`flex items-center gap-2.5 rounded-lg text-[14px] transition-all ${collapsed ? "h-9 justify-center px-0" : "px-2.5 py-2"}`}
                         >
-                            <Bell size={15} className="shrink-0" />
+                            <Bell size={14} className="shrink-0" />
                             {!collapsed && (
                                 <span style={{ color: "var(--text-secondary)" }}>Alerts</span>
                             )}
                         </NavLink>
                     )}
 
-                    <div className={`flex items-center rounded-xl py-2 ${collapsed ? "justify-center px-0" : "gap-3 px-2"}`}>
+                    <div className={`flex items-center rounded-lg py-1.5 ${collapsed ? "justify-center px-0" : "gap-2.5 px-1.5"}`}>
                         <button
                             onClick={() => navigate("/profile")}
                             title="My Profile"
@@ -156,12 +160,12 @@ export default function Sidebar() {
                                 <img
                                     src={user.avatar_url}
                                     alt={user?.name}
-                                    className="h-8 w-8 rounded-full object-cover"
+                                    className="h-[34px] w-[34px] rounded-full object-cover"
                                     style={{ boxShadow: "0 0 0 2px rgba(99,102,241,0.5)" }}
                                 />
                             ) : (
                                 <div
-                                    className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white"
+                                    className="flex h-[34px] w-[34px] items-center justify-center rounded-full text-xs font-bold text-white"
                                     style={{
                                         background: "var(--gradient-primary)",
                                         boxShadow: "0 0 0 2px rgba(99,102,241,0.4)",
@@ -174,10 +178,10 @@ export default function Sidebar() {
 
                         {!collapsed && (
                             <div className="pointer-events-none min-w-0 flex-1">
-                                <p className="truncate text-xs font-semibold leading-none" style={{ color: "var(--text-primary)" }}>
+                                <p className="truncate text-[13px] font-semibold leading-none" style={{ color: "var(--text-primary)" }}>
                                     {user?.name}
                                 </p>
-                                <p className="mt-0.5 text-[10px] capitalize" style={{ color: "var(--text-muted)" }}>
+                                <p className="mt-0.5 text-[11px] capitalize" style={{ color: "var(--text-muted)" }}>
                                     {user?.role}
                                 </p>
                             </div>
@@ -193,9 +197,9 @@ export default function Sidebar() {
                 style={{
                     position: "absolute",
                     left: "calc(100% - 17px)",
-                    top: "78px",
-                    width: "34px",
-                    height: "34px",
+                    top: "74px",
+                    width: "32px",
+                    height: "32px",
                     borderRadius: "9999px",
                     background: "linear-gradient(145deg, #FFFFFF 0%, #F1F5F9 100%)",
                     border: "1px solid rgba(148,163,184,0.35)",
