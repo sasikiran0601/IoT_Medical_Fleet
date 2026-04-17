@@ -24,7 +24,7 @@ export default function Sidebar() {
     const wrapperRef = useRef(null);
     const isAdmin = user?.role === "admin";
     const userRole = user?.role || "viewer";
-    const sidebarWidth = collapsed ? 60 : 210;
+    const sidebarWidth = collapsed ? 60 : 190;
 
     useEffect(() => {
         const handleMouseMove = (event) => {
