@@ -6,6 +6,7 @@ import {
     ChevronRight, ChevronLeft,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
+import CareSyncLogoAnimated from "./CareSyncLogoAnimated";
 
 const NAV = [
     { to: "/", icon: LayoutDashboard, label: "Dashboard", roles: ["admin", "doctor", "nurse", "viewer"] },
@@ -65,11 +66,7 @@ export default function Sidebar() {
             >
                 <div className="flex h-16 shrink-0 items-center px-3">
                     <div className={`flex items-center ${collapsed ? "justify-center w-full" : "gap-0"}`}>
-                        <img
-                            src="/brand/caresync-logo.svg?v=20260417a"
-                            alt="CareSync Logo"
-                            className="h-9 w-9 shrink-0 object-contain"
-                        />
+                        <CareSyncLogoAnimated collapsed={collapsed} size={collapsed ? 40 : 38} className="shrink-0" />
                         {!collapsed && (
                             <span
                                 className="block whitespace-nowrap text-lg leading-none tracking-[-0.012em]"
