@@ -1,12 +1,30 @@
-<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="favGradient" x1="10" y1="54" x2="54" y2="10" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#16A085" />
-      <stop offset="0.55" stop-color="#2DBBD4" />
-      <stop offset="1" stop-color="#5A8FC9" />
-    </linearGradient>
-  </defs>
-  <circle cx="32" cy="32" r="24" stroke="url(#favGradient)" stroke-width="4" />
-  <path d="M32 40L26 34C22.4 30.4 22.4 24.6 26 21C29.6 17.4 35.4 17.4 39 21C42.6 24.6 42.6 30.4 39 34L32 40Z" stroke="url(#favGradient)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
-  <path d="M25 29H29L31 25L34 33L36.5 29H40" stroke="url(#favGradient)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+<svg width="64" height="64" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path
+    d="M16 36C20 23 32 15 46 15C61 15 74 24 79 38"
+    stroke="#18BED6"
+    stroke-width="5.2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M80 60C75 74 62 82 47 82C32 82 20 74 15 61"
+    stroke="#18BED6"
+    stroke-width="5.2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M48 63L40 56C35 51 31 47 31 41C31 35.8 35.2 31.8 40.5 31.8C44 31.8 46.8 33.6 48 36.2C49.2 33.6 52 31.8 55.5 31.8C60.8 31.8 65 35.8 65 41C65 47 61 51 56 56L48 63Z"
+    stroke="#18BED6"
+    stroke-width="4.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M37 46H42.5L46.5 41L50.5 52L54.5 46H60"
+    stroke="#18BED6"
+    stroke-width="3.3"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
 </svg>
