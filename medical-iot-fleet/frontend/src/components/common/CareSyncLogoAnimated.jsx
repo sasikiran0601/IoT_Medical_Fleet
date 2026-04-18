@@ -22,15 +22,11 @@ export default function CareSyncLogoAnimated({ collapsed, size = 40, className =
     const [sequenceId, setSequenceId] = useState(0);
 
     useEffect(() => {
-        if (!wasCollapsed.current && collapsed) {
+        if (wasCollapsed.current !== collapsed) {
             setSequenceId((v) => v + 1);
         }
         wasCollapsed.current = collapsed;
     }, [collapsed]);
-
-    if (!collapsed) {
-        return <StaticLogo size={size} className={className} />;
-    }
 
     if (prefersReducedMotion) {
         return <StaticLogo size={size} className={className} />;
@@ -38,7 +34,7 @@ export default function CareSyncLogoAnimated({ collapsed, size = 40, className =
 
     return (
         <motion.img
-            key={`collapse-seq-${sequenceId}`}
+            key={`sidebar-logo-seq-${sequenceId}-${collapsed ? "collapsed" : "expanded"}`}
             src={BRAND_LOGO_SRC}
             alt="CareSync logo"
             width={size}
