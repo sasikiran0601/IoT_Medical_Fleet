@@ -26,10 +26,9 @@ async def mark_stale_devices_offline() -> int:
         ]
 
         for device in stale_devices:
-            # If device stops sending telemetry (ex: ESP32 power removed),
-            # reflect both connectivity loss and powered-off state in UI.
+            # Stale telemetry means connectivity loss only.
+            # Keep power/control state (is_on) unchanged.
             device.is_online = False
-            device.is_on = False
             marked_count += 1
 
         if marked_count > 0:
