@@ -16,24 +16,26 @@ export default function Dashboard() {
 
     // Live WebSocket updates
     useWebSocket("device_update", useCallback((msg) => {
-        patchDevice(msg.device_id, {
-            is_on: msg.is_on ?? undefined,
-            is_online: msg.is_online ?? true,
-            last_seen: msg.timestamp ?? undefined,
-            last_confidence: msg.confidence_score ?? undefined,
-        });
+        const patch = {};
+        if (typeof msg.is_on === "boolean") patch.is_on = msg.is_on;
+        if (typeof msg.is_online === "boolean") patch.is_online = msg.is_online;
+        if (msg.timestamp) patch.last_seen = msg.timestamp;
+        if (typeof msg.confidence_score === "number") patch.last_confidence = msg.confidence_score;
+        patchDevice(msg.device_id, patch);
     }, [patchDevice]));
 
     useWebSocket("state_change", useCallback((msg) => {
         patchDevice(msg.device_id, { is_on: msg.is_on });
     }, [patchDevice]));
 
-    // Fallback polling when websocket realtime channel is disconnected.
+    // Periodic reconciliation poll:
+    // - every 15s when WS is connected (prevents stale UI if an event is missed)
+    // - every 5s when WS is disconnected
     useEffect(() => {
-        if (connected) return undefined;
+        const intervalMs = connected ? 15000 : 5000;
         const timer = setInterval(() => {
             refetch();
-        }, 5000);
+        }, intervalMs);
         return () => clearInterval(timer);
     }, [connected, refetch]);
 

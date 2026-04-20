@@ -35,34 +35,36 @@ export default function DeviceDetail() {
 
     useEffect(() => { fetchDevice(); }, [fetchDevice]);
 
-    // Fallback polling when realtime websocket is disconnected
+    // Periodic reconciliation poll:
+    // - every 15s when WS is connected (prevents stale UI if an event is missed)
+    // - every 5s when WS is disconnected
     useEffect(() => {
-        if (connected) return undefined;
+        const intervalMs = connected ? 15000 : 5000;
         const timer = setInterval(() => {
             fetchDevice();
-        }, 5000);
+        }, intervalMs);
         return () => clearInterval(timer);
     }, [connected, fetchDevice]);
 
     useWebSocket("device_update", useCallback((msg) => {
         if (msg.device_id !== deviceId) return;
-        const newRecord = {
-            id: Date.now(),
-            readings: JSON.stringify(msg.readings),
-            confidence_score: msg.confidence_score,
-            is_anomaly: msg.is_anomaly ? 1 : 0,
-            timestamp: msg.timestamp,
-        };
-        setSensorData((prev) => [newRecord, ...prev].slice(0, 100));
-        setLastReading(newRecord);
+        if (msg.readings && typeof msg.readings === "object") {
+            const newRecord = {
+                id: Date.now(),
+                readings: JSON.stringify(msg.readings),
+                confidence_score: msg.confidence_score,
+                is_anomaly: msg.is_anomaly ? 1 : 0,
+                timestamp: msg.timestamp,
+            };
+            setSensorData((prev) => [newRecord, ...prev].slice(0, 100));
+            setLastReading(newRecord);
+        }
         setDevice((prev) =>
-            prev
-                ? {
-                    ...prev,
-                    is_online: msg.is_online ?? true,
-                    last_seen: msg.timestamp ?? prev.last_seen,
-                }
-                : prev
+            prev ? {
+                ...prev,
+                ...(typeof msg.is_online === "boolean" ? { is_online: msg.is_online } : {}),
+                ...(msg.timestamp ? { last_seen: msg.timestamp } : {}),
+            } : prev
         );
     }, [deviceId]));
 

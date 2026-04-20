@@ -13,6 +13,7 @@ from app.schemas.device import DeviceCreate, DeviceOut, DeviceUpdate, DeviceCont
 from app.core.dependencies import get_current_user, require_admin, require_nurse_or_above
 from app.services.device_service import log_action, calculate_session_duration
 from app.services.alert_service import check_long_running
+from app.services.presence_service import reconcile_online_flags
 from app.websockets.manager import manager
 
 router = APIRouter(prefix="/api/devices", tags=["Devices"])
@@ -54,10 +55,12 @@ async def list_devices(
         query = query.where(Device.room_id == room_id)
     if device_type:
         query = query.where(Device.device_type == device_type)
-    if is_online is not None:
-        query = query.where(Device.is_online == is_online)
     result = await db.execute(query.order_by(Device.created_at.desc()))
-    return result.scalars().all()
+    devices = result.scalars().all()
+    await reconcile_online_flags(db, devices)
+    if is_online is not None:
+        devices = [d for d in devices if bool(d.is_online) == bool(is_online)]
+    return devices
 
 
 @router.get("/stats")
@@ -68,6 +71,7 @@ async def device_stats(
     """Summary counts for dashboard header cards."""
     result = await db.execute(select(Device))
     devices = result.scalars().all()
+    await reconcile_online_flags(db, devices)
     total   = len(devices)
     online  = sum(1 for d in devices if d.is_online)
     on      = sum(1 for d in devices if d.is_on)
@@ -92,6 +96,7 @@ async def get_device(
     device = result.scalar_one_or_none()
     if not device:
         raise HTTPException(status_code=404, detail="Device not found")
+    await reconcile_online_flags(db, [device])
     return device
 
 

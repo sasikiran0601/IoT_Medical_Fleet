@@ -105,3 +105,55 @@ async def handle_sensor_message(topic: str, payload_bytes: bytes):
                 print(f"[MQTT] Processed telemetry from {device_id} (confidence={confidence}, anomaly={anomaly})")
         except Exception as exc:
             print(f"[MQTT] Unhandled processing error for topic={topic}: {exc}")
+
+
+async def handle_status_message(topic: str, payload_bytes: bytes):
+    """Handle explicit MQTT device presence updates on .../status topics."""
+    try:
+        device_id = extract_device_id(topic)
+        if not device_id:
+            return
+
+        raw = payload_bytes.decode(errors="ignore").strip()
+        status_text = raw.lower()
+        if status_text not in {"online", "offline"}:
+            try:
+                parsed = json.loads(raw)
+                status_text = str(parsed.get("status", "")).strip().lower()
+            except Exception:
+                status_text = ""
+        if status_text not in {"online", "offline"}:
+            return
+
+        online = status_text == "online"
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(select(Device).where(Device.device_id == device_id))
+            device = result.scalar_one_or_none()
+            if not device:
+                return
+
+            changed = bool(device.is_online) != online
+            device.is_online = online
+            if online:
+                device.last_seen = datetime.utcnow()
+            await db.commit()
+
+            if changed:
+                await manager.broadcast_dashboard(
+                    {
+                        "type": "device_update",
+                        "device_id": device.device_id,
+                        "is_online": online,
+                        "is_on": device.is_on,
+                        "timestamp": datetime.utcnow().isoformat(),
+                    }
+                )
+                if not online:
+                    await create_alert(
+                        db,
+                        device.id,
+                        "OFFLINE",
+                        f"{device.name} disconnected from MQTT broker.",
+                    )
+    except Exception as exc:
+        print(f"[MQTT] Unhandled status processing error for topic={topic}: {exc}")

@@ -3,8 +3,8 @@ import threading
 import time
 import paho.mqtt.client as mqtt
 from app.core.config import settings
-from app.mqtt.topics import WILDCARD_DATA, extract_device_id
-from app.mqtt.handler import handle_sensor_message
+from app.mqtt.topics import WILDCARD_DATA, WILDCARD_STATUS, extract_device_id
+from app.mqtt.handler import handle_sensor_message, handle_status_message
 
 
 def create_mqtt_client() -> mqtt.Client:
@@ -18,12 +18,25 @@ def create_mqtt_client() -> mqtt.Client:
         if rc == 0:
             print(f"[MQTT] Connected to broker at {settings.MQTT_HOST}:{settings.MQTT_PORT}")
             client.subscribe(WILDCARD_DATA)
+            client.subscribe(WILDCARD_STATUS)
             print(f"[MQTT] Subscribed to {WILDCARD_DATA}")
+            print(f"[MQTT] Subscribed to {WILDCARD_STATUS}")
         else:
             print(f"[MQTT] Connection failed with code {rc}")
 
     def on_message(client, userdata, msg):
         device_id = extract_device_id(msg.topic) or "__unknown__"
+        if msg.topic.endswith("/status"):
+            future = asyncio.run_coroutine_threadsafe(
+                handle_status_message(msg.topic, msg.payload), loop
+            )
+            def _status_done_callback(f):
+                exc = f.exception()
+                if exc:
+                    print(f"[MQTT] Status handler error for topic={msg.topic}: {exc}")
+            future.add_done_callback(_status_done_callback)
+            return
+
         now_ms = int(time.monotonic() * 1000)
         is_ecg_payload = b"\"ecg_raw\"" in msg.payload
 
