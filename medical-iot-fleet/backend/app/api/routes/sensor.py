@@ -11,10 +11,12 @@ from app.models.device import Device
 from app.models.sensor_data import SensorData
 from app.models.user import User
 from app.schemas.sensor_data import SensorDataOut
+from app.schemas.telemetry import SensorHistoryResponse
 from app.core.dependencies import get_current_user, get_device_by_api_key
 from app.services.sensor_service import (
     range_check, zscore_check, compute_confidence, is_anomaly
 )
+from app.services.telemetry_meta import build_telemetry_meta
 from app.services.alert_service import create_alert
 from app.services.webhook_service import forward_to_webhook
 from app.websockets.manager import manager
@@ -82,6 +84,7 @@ async def ingest_sensor_data(
     # Broadcast to WebSocket listeners
     ws_payload = {
         "readings": readings,
+        "telemetry_meta": build_telemetry_meta(device.device_type, [readings]),
         "confidence_score": confidence,
         "is_anomaly": anomaly_flag,
         "timestamp": datetime.utcnow().isoformat(),
@@ -101,7 +104,7 @@ async def ingest_sensor_data(
 
 
 # ── Retrieve historical data (authenticated via JWT) ───────────────────────
-@router.get("/api/v1/data/{device_id}", response_model=List[SensorDataOut])
+@router.get("/api/v1/data/{device_id}", response_model=SensorHistoryResponse)
 async def get_sensor_data(
     device_id: str,
     limit: int = 100,
@@ -121,4 +124,15 @@ async def get_sensor_data(
         .order_by(SensorData.timestamp.desc())
         .limit(limit)
     )
-    return data_result.scalars().all()
+    records = data_result.scalars().all()
+    payloads = []
+    for record in records:
+        try:
+            payloads.append(json.loads(record.readings or "{}"))
+        except Exception:
+            payloads.append({})
+    telemetry_meta = build_telemetry_meta(device.device_type, payloads)
+    return {
+        "records": records,
+        "telemetry_meta": telemetry_meta,
+    }

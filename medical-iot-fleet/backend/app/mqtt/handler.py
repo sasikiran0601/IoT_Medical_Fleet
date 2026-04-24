@@ -10,6 +10,7 @@ from app.models.device import Device
 from app.models.sensor_data import SensorData
 from app.services.sensor_service import range_check, zscore_check, compute_confidence, is_anomaly
 from app.services.alert_service import create_alert
+from app.services.telemetry_meta import build_telemetry_meta
 from app.services.webhook_service import forward_to_webhook
 from app.websockets.manager import manager
 from app.mqtt.topics import extract_device_id
@@ -90,6 +91,7 @@ async def handle_sensor_message(topic: str, payload_bytes: bytes):
                 # WebSocket broadcast
                 ws_payload = {
                     "readings": readings,
+                    "telemetry_meta": build_telemetry_meta(device.device_type, [readings]),
                     "confidence_score": confidence,
                     "is_anomaly": anomaly,
                     "is_online": True,

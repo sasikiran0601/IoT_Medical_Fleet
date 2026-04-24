@@ -16,6 +16,7 @@ export default function DeviceDetail() {
 
     const [device, setDevice] = useState(null);
     const [sensorData, setSensorData] = useState([]);
+    const [telemetryMeta, setTelemetryMeta] = useState(null);
     const [loading, setLoading] = useState(true);
     const [lastReading, setLastReading] = useState(null);
     const { connected } = useWebSocket();
@@ -27,8 +28,9 @@ export default function DeviceDetail() {
                 getSensorData(deviceId, 50),
             ]);
             setDevice(devRes.data);
-            setSensorData(dataRes.data);
-            if (dataRes.data.length) setLastReading(dataRes.data[0]);
+            setSensorData(dataRes.data.records || []);
+            setTelemetryMeta(dataRes.data.telemetry_meta || null);
+            if ((dataRes.data.records || []).length) setLastReading(dataRes.data.records[0]);
         } catch { /* device not found */ }
         finally { setLoading(false); }
     }, [deviceId]);
@@ -58,6 +60,7 @@ export default function DeviceDetail() {
             };
             setSensorData((prev) => [newRecord, ...prev].slice(0, 100));
             setLastReading(newRecord);
+            if (msg.telemetry_meta) setTelemetryMeta(msg.telemetry_meta);
         }
         setDevice((prev) =>
             prev ? {
@@ -86,7 +89,9 @@ export default function DeviceDetail() {
     const lastReadings = lastReading ? (() => {
         try { return JSON.parse(lastReading.readings); } catch { return {}; }
     })() : {};
-    const latestReadingEntries = Object.entries(lastReadings).filter(([key]) => key !== "timestamp");
+    const excludedFields = new Set(telemetryMeta?.excluded_fields || []);
+    const fieldConfig = telemetryMeta?.field_config || {};
+    const latestReadingEntries = Object.entries(lastReadings).filter(([key]) => key !== "timestamp" && !excludedFields.has(key));
 
     return (
         <div className="space-y-6">
@@ -125,7 +130,7 @@ export default function DeviceDetail() {
                             <div className="grid grid-cols-2 gap-2">
                                 {latestReadingEntries.map(([k, v]) => (
                                     <div key={k} className="rounded-lg bg-surface-2 p-2 text-center">
-                                        <p className="text-xs capitalize text-text-secondary">{k.replace("_", " ")}</p>
+                                        <p className="text-xs capitalize text-text-secondary">{fieldConfig[k]?.label || k.replace("_", " ")}</p>
                                         <p className="text-base font-bold text-primary-light">{v}</p>
                                     </div>
                                 ))}
@@ -142,7 +147,7 @@ export default function DeviceDetail() {
                 />
             </div>
 
-            <SensorChart data={sensorData} device={device} />
+            <SensorChart data={sensorData} device={device} telemetryMeta={telemetryMeta} />
         </div>
     );
 }
