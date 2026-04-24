@@ -23,9 +23,9 @@ def _run_schema_patches(sync_conn):
         if "data_state" not in device_cols:
             sync_conn.execute(text("ALTER TABLE devices ADD COLUMN data_state VARCHAR DEFAULT 'unknown'"))
         if "last_status_at" not in device_cols:
-            sync_conn.execute(text("ALTER TABLE devices ADD COLUMN last_status_at DATETIME"))
+            sync_conn.execute(text("ALTER TABLE devices ADD COLUMN last_status_at TIMESTAMP"))
         if "last_data_at" not in device_cols:
-            sync_conn.execute(text("ALTER TABLE devices ADD COLUMN last_data_at DATETIME"))
+            sync_conn.execute(text("ALTER TABLE devices ADD COLUMN last_data_at TIMESTAMP"))
 
 
 async def init_db():
