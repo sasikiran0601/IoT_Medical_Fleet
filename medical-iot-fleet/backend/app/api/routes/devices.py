@@ -1,4 +1,3 @@
-import uuid
 from datetime import datetime
 from typing import List, Optional
 
@@ -214,23 +213,6 @@ async def set_webhook(
     device.webhook_url = body.webhook_url
     await db.commit()
     return {"message": "Webhook configured", "webhook_url": body.webhook_url}
-
-
-@router.post("/{device_id}/regenerate-key")
-async def regenerate_api_key(
-    device_id: str,
-    db: AsyncSession = Depends(get_db),
-    _: User = Depends(require_admin),
-):
-    result = await db.execute(
-        select(Device).where(Device.device_id == device_id)
-    )
-    device = result.scalar_one_or_none()
-    if not device:
-        raise HTTPException(status_code=404, detail="Device not found")
-    device.api_key = f"mk_{uuid.uuid4().hex}"
-    await db.commit()
-    return {"new_api_key": device.api_key}
 
 
 @router.post("/{device_id}/ota")

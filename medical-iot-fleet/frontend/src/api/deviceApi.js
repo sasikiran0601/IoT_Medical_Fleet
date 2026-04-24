@@ -14,7 +14,7 @@ export const setWebhook = (deviceId, webhook_url) =>
     api.put(`/api/devices/${deviceId}/webhook`, { webhook_url });
 
 export const regenerateKey = (deviceId) =>
-    api.post(`/api/devices/${deviceId}/regenerate-key`);
+    api.post(`/api/keys/${deviceId}/regenerate`);
 
 export const triggerOta = (deviceId, firmware_version) =>
     api.post(`/api/devices/${deviceId}/ota`, null, { params: { firmware_version } });

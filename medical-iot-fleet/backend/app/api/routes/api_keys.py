@@ -1,14 +1,59 @@
+import json
 import uuid
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
+from app.core.config import settings
 from app.db.database import get_db
 from app.models.device import Device
 from app.models.user import User
-from app.core.dependencies import get_current_user, require_admin
+from app.core.dependencies import require_admin
 
 router = APIRouter(prefix="/api/keys", tags=["API Keys"])
+
+
+def _api_base_url(request: Request) -> str:
+    if settings.API_BASE_URL:
+        return settings.API_BASE_URL.rstrip("/")
+
+    forwarded_proto = (request.headers.get("x-forwarded-proto") or request.url.scheme or "http").split(",")[0].strip()
+    forwarded_host = (request.headers.get("x-forwarded-host") or request.headers.get("host") or "").split(",")[0].strip()
+    if forwarded_host:
+        return f"{forwarded_proto}://{forwarded_host}".rstrip("/")
+
+    return str(request.base_url).rstrip("/")
+
+
+def _sample_payload(device_type: str) -> dict:
+    samples = {
+        "ECG": {
+            "ecg_raw": 1984,
+            "heart_rate": 78,
+            "rr_interval_ms": 770,
+            "status": "NORMAL",
+        },
+        "Pulse Oximeter": {
+            "spo2": 98,
+            "pulse": 76,
+            "status": "NORMAL",
+        },
+        "Ventilator": {
+            "respiratory_rate": 16,
+            "tidal_volume": 500,
+            "status": "NORMAL",
+        },
+        "Temperature Sensor": {
+            "temperature": 36.8,
+            "status": "NORMAL",
+        },
+        "Blood Pressure": {
+            "systolic": 120,
+            "diastolic": 80,
+            "status": "NORMAL",
+        },
+    }
+    return samples.get(device_type, {"status": "NORMAL", "value": 1})
 
 
 @router.get("", include_in_schema=False)
@@ -57,8 +102,9 @@ async def regenerate_key(
 @router.get("/example/{device_id}")
 async def get_example_code(
     device_id: str,
+    request: Request,
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(require_admin),
 ):
     """Return ready-to-use code examples for this device."""
     result = await db.execute(
@@ -68,6 +114,11 @@ async def get_example_code(
     if not device:
         raise HTTPException(status_code=404, detail="Device not found")
 
+    api_base_url = _api_base_url(request)
+    payload = _sample_payload(device.device_type)
+    payload_json = json.dumps(payload)
+    payload_pretty = json.dumps(payload, indent=2)
+
     return {
         "device_id": device_id,
         "api_key": device.api_key,
@@ -76,35 +127,50 @@ async def get_example_code(
 
 API_KEY = "{device.api_key}"
 DEVICE_ID = "{device_id}"
-URL = "http://your-server/api/v1/data/{{DEVICE_ID}}"
+URL = "{api_base_url}/api/v1/data/{{DEVICE_ID}}"
 
-data = {{"temperature": 36.6, "heart_rate": 78}}
+data = {payload_pretty}
 resp = requests.post(URL, json=data, headers={{"X-API-Key": API_KEY}})
 print(resp.json())
 """,
-            "arduino_esp32": f"""#include <HTTPClient.h>
-#include <ArduinoJson.h>
+            "arduino_esp32": f"""#include <WiFi.h>
+#include <WiFiClientSecure.h>
+#include <HTTPClient.h>
 
+const char* ssid = "YOUR_WIFI_SSID";
+const char* password = "YOUR_WIFI_PASSWORD";
 const char* apiKey = "{device.api_key}";
-const char* deviceId = "{device_id}";
-const char* serverUrl = "http://your-server/api/v1/data/{device_id}";
+const char* serverUrl = "{api_base_url}/api/v1/data/{device_id}";
 
-void sendData(float temperature, int heartRate) {{
-  HTTPClient http;
-  http.begin(serverUrl);
-  http.addHeader("Content-Type", "application/json");
-  http.addHeader("X-API-Key", apiKey);
+WiFiClientSecure client;
 
-  String body = "{{\"temperature\":" + String(temperature) +
-                ",\"heart_rate\":" + String(heartRate) + "}}";
-  int code = http.POST(body);
-  http.end();
+void setup() {{
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) delay(500);
+  client.setInsecure();
+}}
+
+void loop() {{
+  if (WiFi.status() == WL_CONNECTED) {{
+    HTTPClient http;
+    http.begin(client, serverUrl);
+    http.addHeader("Content-Type", "application/json");
+    http.addHeader("X-API-Key", apiKey);
+
+    const char* payload = R"json({payload_json})json";
+    int code = http.POST(payload);
+    Serial.println(code);
+    Serial.println(http.getString());
+    http.end();
+  }}
+  delay(5000);
 }}
 """,
-            "curl": f"""curl -X POST http://your-server/api/v1/data/{device_id} \\
+            "curl": f"""curl -X POST {api_base_url}/api/v1/data/{device_id} \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: {device.api_key}" \\
-  -d '{{"temperature": 36.6, "heart_rate": 78}}'
+  -d '{payload_json}'
 """,
         },
     }

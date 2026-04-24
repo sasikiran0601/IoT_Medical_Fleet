@@ -7,6 +7,14 @@ import { setWebhook } from "../api/deviceApi";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import toast from "react-hot-toast";
 
+function formatExampleLabel(label) {
+    return label
+        .replace(/_/g, " ")
+        .replace(/\bapi\b/gi, "API")
+        .replace(/\besp32\b/gi, "ESP32")
+        .replace(/\bcurl\b/gi, "cURL");
+}
+
 export default function ApiManager() {
     const [keys, setKeys] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -136,7 +144,7 @@ export default function ApiManager() {
                                         <div className="flex gap-2">
                                             <input
                                                 className="input flex-1 text-xs"
-                                                placeholder="https://your-server.com/webhook or AWS IoT endpoint"
+                                                placeholder="https://example.com/webhook"
                                                 defaultValue={item.webhook_url || ""}
                                                 onChange={(e) => setWebhookInputs({ ...webhookInputs, [item.device_id]: e.target.value })}
                                             />
@@ -163,7 +171,7 @@ export default function ApiManager() {
                                                 {Object.entries(examples[item.device_id].examples).map(([lang, code]) => (
                                                     <div key={lang} className="overflow-hidden rounded-xl border border-border-subtle bg-bg-alt">
                                                         <div className="flex items-center justify-between border-b border-border-subtle bg-bg-section px-3 py-2">
-                                                            <span className="font-mono text-xs capitalize text-text-secondary">{lang}</span>
+                                                            <span className="font-mono text-xs text-text-secondary">{formatExampleLabel(lang)}</span>
                                                             <button onClick={() => copy(code)} className="text-text-muted hover:text-text-primary">
                                                                 <Copy size={11} />
                                                             </button>

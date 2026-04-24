@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     GITHUB_REDIRECT_URI: Optional[str] = None
 
     FRONTEND_URL: str = "http://localhost:5173"
+    API_BASE_URL: Optional[str] = None
     PUBLIC_SIGNUP_DISABLED: bool = True
     INVITE_TOKEN_EXPIRE_HOURS: int = 72
     INVITE_ACCEPT_URL: Optional[str] = None
@@ -36,11 +37,12 @@ class Settings(BaseSettings):
     MQTT_USERNAME: str = "admin"
     MQTT_PASSWORD: str = "admin123"
     MQTT_MIN_INGEST_INTERVAL_MS: int = 1000
-    MQTT_ECG_MIN_INGEST_INTERVAL_MS: int = 120
-    MQTT_PROCESS_MAX_CONCURRENCY: int = 1
+    MQTT_ECG_MIN_INGEST_INTERVAL_MS: int = 250
+    MQTT_PROCESS_MAX_CONCURRENCY: int = 2
     MQTT_ANOMALY_ALERT_COOLDOWN_SECONDS: int = 30
-    DEVICE_OFFLINE_SECONDS: int = 5
+    DEVICE_OFFLINE_SECONDS: int = 45
     DEVICE_PRESENCE_SWEEP_SECONDS: int = 5
+    DEVICE_STALE_SWEEPS_REQUIRED: int = 3
 
     # DB Pool (critical when using hosted Postgres poolers)
     DB_POOL_SIZE: int = 3
