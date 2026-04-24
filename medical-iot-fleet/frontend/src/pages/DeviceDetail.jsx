@@ -21,13 +21,7 @@ export default function DeviceDetail() {
     const [loading, setLoading] = useState(true);
     const [lastReading, setLastReading] = useState(null);
     const [exporting, setExporting] = useState(false);
-    const [exportFilters, setExportFilters] = useState({
-        limit: 500,
-        from_datetime: "",
-        to_datetime: "",
-        time_slot_start: "",
-        time_slot_end: "",
-    });
+    const [exportLimit, setExportLimit] = useState(500);
     const { connected } = useWebSocket();
 
     const fetchDevice = useCallback(async () => {
@@ -115,12 +109,8 @@ export default function DeviceDetail() {
             setExporting(true);
             const params = {
                 format,
-                limit: Number(exportFilters.limit) || 500,
+                limit: Number(exportLimit) || 500,
             };
-            if (exportFilters.from_datetime) params.from_datetime = exportFilters.from_datetime;
-            if (exportFilters.to_datetime) params.to_datetime = exportFilters.to_datetime;
-            if (exportFilters.time_slot_start) params.time_slot_start = exportFilters.time_slot_start;
-            if (exportFilters.time_slot_end) params.time_slot_end = exportFilters.time_slot_end;
 
             const response = await exportSensorData(deviceId, params);
             const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
@@ -159,9 +149,38 @@ export default function DeviceDetail() {
                         <span className="font-mono">{device.device_id}</span>
                     </p>
                 </div>
-                <button onClick={fetchDevice} className="text-text-secondary transition-colors hover:text-primary-light">
-                    <RefreshCw size={16} />
-                </button>
+                <div className="flex items-center gap-2">
+                    <input
+                        type="number"
+                        min="1"
+                        max="5000"
+                        className="input h-9 w-24 text-sm"
+                        value={exportLimit}
+                        onChange={(e) => setExportLimit(e.target.value)}
+                        title="Latest N records"
+                    />
+                    <button
+                        onClick={() => handleExport("csv")}
+                        disabled={exporting}
+                        className="btn-secondary flex items-center gap-2 px-3 py-2 text-sm"
+                        title="Export latest N records as CSV"
+                    >
+                        <Download size={14} />
+                        {exporting ? "Exporting..." : "CSV"}
+                    </button>
+                    <button
+                        onClick={() => handleExport("json")}
+                        disabled={exporting}
+                        className="btn-secondary flex items-center gap-2 px-3 py-2 text-sm"
+                        title="Export latest N records as JSON"
+                    >
+                        <Download size={14} />
+                        JSON
+                    </button>
+                    <button onClick={fetchDevice} className="text-text-secondary transition-colors hover:text-primary-light">
+                        <RefreshCw size={16} />
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -196,83 +215,6 @@ export default function DeviceDetail() {
                     score={lastReading?.confidence_score}
                     isAnomaly={lastReading?.is_anomaly === 1}
                 />
-            </div>
-
-            <div className="card space-y-4">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h3 className="text-sm font-semibold text-text-primary">Export Device Data</h3>
-                        <p className="text-xs text-text-muted">Download telemetry for this device only using latest N records, date range, and time slot filters.</p>
-                    </div>
-                    <Download size={16} className="text-text-secondary" />
-                </div>
-
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
-                    <div>
-                        <label className="mb-1 block text-xs text-text-secondary">Latest N Records</label>
-                        <input
-                            type="number"
-                            min="1"
-                            max="5000"
-                            className="input"
-                            value={exportFilters.limit}
-                            onChange={(e) => setExportFilters((prev) => ({ ...prev, limit: e.target.value }))}
-                        />
-                    </div>
-                    <div>
-                        <label className="mb-1 block text-xs text-text-secondary">From</label>
-                        <input
-                            type="datetime-local"
-                            className="input"
-                            value={exportFilters.from_datetime}
-                            onChange={(e) => setExportFilters((prev) => ({ ...prev, from_datetime: e.target.value }))}
-                        />
-                    </div>
-                    <div>
-                        <label className="mb-1 block text-xs text-text-secondary">To</label>
-                        <input
-                            type="datetime-local"
-                            className="input"
-                            value={exportFilters.to_datetime}
-                            onChange={(e) => setExportFilters((prev) => ({ ...prev, to_datetime: e.target.value }))}
-                        />
-                    </div>
-                    <div>
-                        <label className="mb-1 block text-xs text-text-secondary">Time Slot Start</label>
-                        <input
-                            type="time"
-                            className="input"
-                            value={exportFilters.time_slot_start}
-                            onChange={(e) => setExportFilters((prev) => ({ ...prev, time_slot_start: e.target.value }))}
-                        />
-                    </div>
-                    <div>
-                        <label className="mb-1 block text-xs text-text-secondary">Time Slot End</label>
-                        <input
-                            type="time"
-                            className="input"
-                            value={exportFilters.time_slot_end}
-                            onChange={(e) => setExportFilters((prev) => ({ ...prev, time_slot_end: e.target.value }))}
-                        />
-                    </div>
-                </div>
-
-                <div className="flex flex-wrap gap-3">
-                    <button
-                        onClick={() => handleExport("csv")}
-                        disabled={exporting}
-                        className="btn-primary"
-                    >
-                        {exporting ? "Exporting..." : "Export CSV"}
-                    </button>
-                    <button
-                        onClick={() => handleExport("json")}
-                        disabled={exporting}
-                        className="btn-secondary"
-                    >
-                        {exporting ? "Exporting..." : "Export JSON"}
-                    </button>
-                </div>
             </div>
 
             <SensorChart data={sensorData} device={device} telemetryMeta={telemetryMeta} />
