@@ -19,6 +19,11 @@ export default function Dashboard() {
         const patch = {};
         if (typeof msg.is_on === "boolean") patch.is_on = msg.is_on;
         if (typeof msg.is_online === "boolean") patch.is_online = msg.is_online;
+        if (msg.connection_state) patch.connection_state = msg.connection_state;
+        if (msg.data_state) patch.data_state = msg.data_state;
+        if (msg.presence_source) patch.presence_source = msg.presence_source;
+        if (msg.last_status_at) patch.last_status_at = msg.last_status_at;
+        if (msg.last_data_at) patch.last_data_at = msg.last_data_at;
         if (msg.timestamp) patch.last_seen = msg.timestamp;
         if (typeof msg.confidence_score === "number") patch.last_confidence = msg.confidence_score;
         patchDevice(msg.device_id, patch);
@@ -70,11 +75,12 @@ export default function Dashboard() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
                 <StatCard label="Total Devices" value={stats?.total} icon={Activity} color="primary" />
                 <StatCard label="Online" value={stats?.online} icon={Wifi} color="green" />
                 <StatCard label="Offline" value={stats?.offline} icon={WifiOff} color="slate" />
                 <StatCard label="Active (ON)" value={stats?.active} icon={Power} color="yellow" />
+                <StatCard label="Data Stale" value={stats?.stale} icon={Activity} color="yellow" />
             </div>
 
             {/* Filter tabs and Grid */}

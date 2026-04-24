@@ -66,6 +66,11 @@ export default function DeviceDetail() {
             prev ? {
                 ...prev,
                 ...(typeof msg.is_online === "boolean" ? { is_online: msg.is_online } : {}),
+                ...(msg.connection_state ? { connection_state: msg.connection_state } : {}),
+                ...(msg.data_state ? { data_state: msg.data_state } : {}),
+                ...(msg.presence_source ? { presence_source: msg.presence_source } : {}),
+                ...(msg.last_status_at ? { last_status_at: msg.last_status_at } : {}),
+                ...(msg.last_data_at ? { last_data_at: msg.last_data_at } : {}),
                 ...(msg.timestamp ? { last_seen: msg.timestamp } : {}),
             } : prev
         );
@@ -93,6 +98,9 @@ export default function DeviceDetail() {
     const fieldConfig = telemetryMeta?.field_config || {};
     const latestReadingEntries = Object.entries(lastReadings).filter(([key]) => key !== "timestamp" && !excludedFields.has(key));
 
+    const deviceStatusLabel = getDeviceStatusLabel(device);
+    const deviceStatusClass = getDeviceStatusClass(device);
+
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
@@ -102,8 +110,8 @@ export default function DeviceDetail() {
                 <div className="flex-1">
                     <div className="flex items-center gap-3">
                         <h1 className="text-xl font-bold text-text-primary">{device.name}</h1>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${device.is_online ? "badge-online" : "badge-offline"}`}>
-                            {device.is_online ? "Online" : "Offline"}
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${deviceStatusClass}`}>
+                            {deviceStatusLabel}
                         </span>
                     </div>
                     <p className="text-sm text-text-muted">
@@ -120,7 +128,10 @@ export default function DeviceDetail() {
                 <div className="card space-y-3">
                     <h3 className="text-sm font-semibold text-text-primary">Device Info</h3>
                     <InfoRow icon={Cpu} label="Type" value={device.device_type} />
-                    <InfoRow icon={Clock} label="Last Seen" value={timeAgo(device.last_seen)} />
+                    <InfoRow icon={Clock} label="Connection" value={device.connection_state || "unknown"} />
+                    <InfoRow icon={Clock} label="Data State" value={device.data_state || "unknown"} />
+                    <InfoRow icon={Clock} label="Last Data" value={timeAgo(device.last_data_at || device.last_seen)} />
+                    <InfoRow icon={Clock} label="Last Status" value={timeAgo(device.last_status_at)} />
                     <InfoRow icon={Cpu} label="Firmware" value={device.firmware_version} />
                     <InfoRow icon={Clock} label="Registered" value={fmtDate(device.created_at)} />
 
@@ -159,4 +170,20 @@ function InfoRow({ label, value }) {
             <span className="font-medium text-text-primary">{value ?? "—"}</span>
         </div>
     );
+}
+
+function getDeviceStatusLabel(device) {
+    if (device.connection_state === "connected" && device.data_state === "fresh") return "Receiving live data";
+    if (device.connection_state === "connected" && device.data_state === "stale") return "Connected, data stale";
+    if (device.connection_state === "connected") return "Connected";
+    if (device.connection_state === "unknown" && device.data_state === "fresh") return "Legacy telemetry";
+    return "Disconnected";
+}
+
+function getDeviceStatusClass(device) {
+    if (device.connection_state === "connected" && device.data_state === "fresh") return "badge-online";
+    if (device.connection_state === "connected" && device.data_state === "stale") return "bg-amber-100 text-amber-700";
+    if (device.connection_state === "connected") return "bg-teal-100 text-teal-700";
+    if (device.connection_state === "unknown" && device.data_state === "fresh") return "bg-sky-100 text-sky-700";
+    return "badge-offline";
 }

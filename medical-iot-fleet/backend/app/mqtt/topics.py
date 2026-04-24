@@ -19,3 +19,16 @@ def extract_device_id(topic: str) -> str:
     if len(parts) == 6 and parts[0] == "hospital" and parts[-1] in {"data", "status"}:
         return parts[4]
     return ""
+
+
+def extract_topic_context(topic: str) -> dict:
+    parts = topic.split("/")
+    if len(parts) != 6 or parts[0] != "hospital" or parts[-1] not in {"data", "status"}:
+        return {}
+    return {
+        "floor": parts[1],
+        "room": parts[2],
+        "bed": parts[3],
+        "device_id": parts[4],
+        "kind": parts[5],
+    }

@@ -46,6 +46,9 @@ export default function DeviceCard({ device, onDeleted }) {
         }
     };
 
+    const statusTone = getDeviceStatusTone(device);
+    const statusLabel = getDeviceStatusLabel(device);
+
     return (
         <>
             <div
@@ -71,7 +74,7 @@ export default function DeviceCard({ device, onDeleted }) {
                         <div className="mb-1 flex items-center gap-2">
                             <span
                                 className="aspect-square w-2 shrink-0 rounded-full shadow-sm"
-                                style={{ background: device.is_online ? "#22C55E" : "#EF4444" }}
+                                style={{ background: statusTone.dot }}
                             />
                             <span className="truncate font-mono text-[11px] tracking-wider text-gray-400">
                                 {device.device_id}
@@ -127,18 +130,18 @@ export default function DeviceCard({ device, onDeleted }) {
                 <div className="mt-2 flex items-center justify-between border-t border-gray-100 pt-3 text-[11px] font-semibold">
                     <span
                         className="flex items-center gap-1.5 capitalize transition-colors duration-200"
-                        style={{ color: device.is_online ? "#22C55E" : "#EF4444" }}
+                        style={{ color: statusTone.text }}
                     >
-                        {device.is_online ? (
+                        {statusTone.icon === "online" ? (
                             <Wifi size={13} strokeWidth={2.5} />
                         ) : (
                             <WifiOff size={13} strokeWidth={2.5} />
                         )}
-                        {device.is_online ? "Online" : "Offline"}
+                        {statusLabel}
                     </span>
                     <span className="flex items-center gap-1.5 text-gray-500">
                         <Clock size={13} strokeWidth={2.5} />
-                        {timeAgo(device.last_seen)}
+                        {timeAgo(device.last_data_at || device.last_seen)}
                     </span>
                 </div>
             </div>
@@ -155,4 +158,28 @@ export default function DeviceCard({ device, onDeleted }) {
             />
         </>
     );
+}
+
+function getDeviceStatusLabel(device) {
+    if (device.connection_state === "connected" && device.data_state === "fresh") return "Receiving live data";
+    if (device.connection_state === "connected" && device.data_state === "stale") return "Connected, data stale";
+    if (device.connection_state === "connected") return "Connected";
+    if (device.connection_state === "unknown" && device.data_state === "fresh") return "Legacy telemetry";
+    return "Disconnected";
+}
+
+function getDeviceStatusTone(device) {
+    if (device.connection_state === "connected" && device.data_state === "fresh") {
+        return { text: "#22C55E", dot: "#22C55E", icon: "online" };
+    }
+    if (device.connection_state === "connected" && device.data_state === "stale") {
+        return { text: "#F59E0B", dot: "#F59E0B", icon: "online" };
+    }
+    if (device.connection_state === "connected") {
+        return { text: "#14B8A6", dot: "#14B8A6", icon: "online" };
+    }
+    if (device.connection_state === "unknown" && device.data_state === "fresh") {
+        return { text: "#0EA5E9", dot: "#0EA5E9", icon: "online" };
+    }
+    return { text: "#EF4444", dot: "#EF4444", icon: "offline" };
 }

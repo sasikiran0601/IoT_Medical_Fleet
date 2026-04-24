@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.models.alert import Alert
 from app.models.device import Device
-from app.services.presence_service import compute_online_from_last_seen, seconds_since_last_seen
+from app.services.presence_service import compute_presence_snapshot, seconds_since_last_seen
 
 
 async def create_alert(
@@ -46,9 +46,12 @@ async def check_long_running(db: AsyncSession, device: Device):
 
 async def check_device_offline(db: AsyncSession, device: Device):
     """Alert if device has not sent data in the last 60 seconds."""
-    if device.last_seen and device.is_online and not compute_online_from_last_seen(device.last_seen):
-        seconds_silent = seconds_since_last_seen(device.last_seen) or 0
-        device.is_online = False
+    snapshot = compute_presence_snapshot(device)
+    if device.is_online and not snapshot["is_online"]:
+        seconds_silent = seconds_since_last_seen(snapshot["last_data_at"] or snapshot["last_seen"]) or 0
+        device.is_online = snapshot["is_online"]
+        device.connection_state = snapshot["connection_state"]
+        device.data_state = snapshot["data_state"]
         await db.commit()
         await create_alert(
             db,

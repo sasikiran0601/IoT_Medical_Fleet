@@ -43,6 +43,9 @@ class Settings(BaseSettings):
     DEVICE_OFFLINE_SECONDS: int = 45
     DEVICE_PRESENCE_SWEEP_SECONDS: int = 5
     DEVICE_STALE_SWEEPS_REQUIRED: int = 3
+    DEVICE_STATUS_TIMEOUT_SECONDS: int = 25
+    DEVICE_DATA_STALE_SECONDS: int = 20
+    MQTT_REJECT_TOPIC_IDENTITY_MISMATCH: bool = False
 
     # DB Pool (critical when using hosted Postgres poolers)
     DB_POOL_SIZE: int = 3

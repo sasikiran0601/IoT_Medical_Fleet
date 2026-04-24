@@ -17,8 +17,13 @@ class DeviceOut(BaseModel):
     room_id: Optional[str]
     is_online: bool
     is_on: bool
+    presence_source: str
+    connection_state: str
+    data_state: str
     webhook_url: Optional[str]
     last_seen: Optional[datetime]
+    last_status_at: Optional[datetime]
+    last_data_at: Optional[datetime]
     firmware_version: str
     created_at: datetime
 

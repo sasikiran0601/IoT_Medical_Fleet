@@ -16,6 +16,7 @@ from app.core.dependencies import get_current_user, get_device_by_api_key
 from app.services.sensor_service import (
     range_check, zscore_check, compute_confidence, is_anomaly
 )
+from app.services.presence_service import compute_presence_snapshot
 from app.services.telemetry_meta import build_telemetry_meta
 from app.services.alert_service import create_alert
 from app.services.webhook_service import forward_to_webhook
@@ -68,8 +69,14 @@ async def ingest_sensor_data(
     db.add(record)
 
     # Update device status
-    device.last_seen = datetime.utcnow()
-    device.is_online = True
+    now = datetime.utcnow()
+    device.presence_source = "http"
+    device.last_data_at = now
+    device.last_seen = now
+    snapshot = compute_presence_snapshot(device, now)
+    device.connection_state = snapshot["connection_state"]
+    device.data_state = snapshot["data_state"]
+    device.is_online = snapshot["is_online"]
     await db.commit()
 
     # Create alert if anomaly detected
@@ -87,7 +94,13 @@ async def ingest_sensor_data(
         "telemetry_meta": build_telemetry_meta(device.device_type, [readings]),
         "confidence_score": confidence,
         "is_anomaly": anomaly_flag,
-        "timestamp": datetime.utcnow().isoformat(),
+        "presence_source": device.presence_source,
+        "connection_state": device.connection_state,
+        "data_state": device.data_state,
+        "is_online": device.is_online,
+        "last_status_at": device.last_status_at.isoformat() if device.last_status_at else None,
+        "last_data_at": device.last_data_at.isoformat() if device.last_data_at else None,
+        "timestamp": now.isoformat(),
     }
     await manager.broadcast_sensor(device_id, ws_payload)
 
