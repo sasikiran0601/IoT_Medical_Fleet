@@ -14,9 +14,15 @@ class InMemoryRateLimiter:
         self._lock = Lock()
         self._cleanup_counter = 0
 
-    def allow(self, bucket: str, key: str, limit: int, window_seconds: int) -> tuple[bool, int]:
+    def allow(
+        self,
+        bucket: str,
+        key: str,
+        limit: int,
+        window_seconds: int,
+    ) -> tuple[bool, int, int, int]:
         if not settings.RATE_LIMIT_ENABLED or limit <= 0 or window_seconds <= 0:
-            return True, 0
+            return True, 0, max(0, limit), max(0, window_seconds)
 
         now = time.monotonic()
         cutoff = now - window_seconds
@@ -29,14 +35,16 @@ class InMemoryRateLimiter:
 
             if len(queue) >= limit:
                 retry_after = max(1, int(math.ceil(window_seconds - (now - queue[0]))))
-                return False, retry_after
+                return False, retry_after, 0, retry_after
 
             queue.append(now)
+            remaining = max(0, limit - len(queue))
+            reset_after = max(1, int(math.ceil(window_seconds - (now - queue[0])))) if queue else window_seconds
             self._cleanup_counter += 1
             if self._cleanup_counter % 256 == 0:
                 self._cleanup(cutoff)
 
-        return True, 0
+        return True, 0, remaining, reset_after
 
     def _cleanup(self, cutoff: float) -> None:
         empty_keys = []
@@ -64,22 +72,35 @@ def get_request_identity(request: Request) -> str:
 
 
 def enforce_request_rate_limit(
+    response,
     request: Request,
     bucket: str,
     limit: int,
     window_seconds: int,
     scope_key: str | None = None,
-) -> None:
+) -> dict[str, str]:
     identity = get_request_identity(request)
     if scope_key:
         identity = f"{identity}:{scope_key}"
 
-    allowed, retry_after = rate_limiter.allow(bucket, identity, limit, window_seconds)
+    allowed, retry_after, remaining, reset_after = rate_limiter.allow(bucket, identity, limit, window_seconds)
+    headers = {
+        "X-RateLimit-Limit": str(limit),
+        "X-RateLimit-Remaining": str(remaining),
+        "X-RateLimit-Reset": str(reset_after),
+    }
+
     if allowed:
-        return
+        if response is not None:
+            for key, value in headers.items():
+                response.headers[key] = value
+        return headers
 
     raise HTTPException(
         status_code=429,
         detail="Rate limit exceeded. Please try again shortly.",
-        headers={"Retry-After": str(retry_after)},
+        headers={
+            **headers,
+            "Retry-After": str(retry_after),
+        },
     )
