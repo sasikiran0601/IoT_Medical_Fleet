@@ -1,7 +1,7 @@
 import httpx
 from datetime import datetime
 from urllib.parse import urlencode
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -52,11 +52,13 @@ def _resolve_oauth_redirect_uri(request: Request, provider: str) -> str:
 # ── Local Register ─────────────────────────────────────────────────────────
 @router.post("/register", response_model=TokenResponse)
 async def register(
+    response: Response,
     request: Request,
     data: UserRegister,
     db: AsyncSession = Depends(get_db),
 ):
     enforce_request_rate_limit(
+        response,
         request,
         "auth_register",
         settings.RATE_LIMIT_REGISTER_REQUESTS,
@@ -109,11 +111,13 @@ async def register(
 # ── Local Login ────────────────────────────────────────────────────────────
 @router.post("/login", response_model=TokenResponse)
 async def login(
+    response: Response,
     request: Request,
     form: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db),
 ):
     enforce_request_rate_limit(
+        response,
         request,
         "auth_login",
         settings.RATE_LIMIT_AUTH_REQUESTS,
@@ -137,7 +141,8 @@ async def login(
 # ── Google OAuth ───────────────────────────────────────────────────────────
 @router.get("/google")
 async def google_login(request: Request):
-    enforce_request_rate_limit(
+    rate_limit_headers = enforce_request_rate_limit(
+        None,
         request,
         "auth_google",
         settings.RATE_LIMIT_AUTH_REQUESTS,
@@ -153,7 +158,10 @@ async def google_login(request: Request):
         "&response_type=code"
         "&scope=openid email profile"
     )
-    return RedirectResponse(params)
+    redirect = RedirectResponse(params)
+    for key, value in rate_limit_headers.items():
+        redirect.headers[key] = value
+    return redirect
 
 
 @router.get("/google/callback")
@@ -162,7 +170,8 @@ async def google_callback(
     request: Request,
     db: AsyncSession = Depends(get_db),
 ):
-    enforce_request_rate_limit(
+    rate_limit_headers = enforce_request_rate_limit(
+        None,
         request,
         "auth_google_callback",
         settings.RATE_LIMIT_AUTH_REQUESTS,
@@ -224,13 +233,17 @@ async def google_callback(
             await db.refresh(user)
 
     token = create_access_token({"sub": user.id, "role": user.role})
-    return RedirectResponse(f"{settings.FRONTEND_URL}/auth/success?token={token}")
+    redirect = RedirectResponse(f"{settings.FRONTEND_URL}/auth/success?token={token}")
+    for key, value in rate_limit_headers.items():
+        redirect.headers[key] = value
+    return redirect
 
 
 # ── GitHub OAuth ───────────────────────────────────────────────────────────
 @router.get("/github")
 async def github_login(request: Request):
-    enforce_request_rate_limit(
+    rate_limit_headers = enforce_request_rate_limit(
+        None,
         request,
         "auth_github",
         settings.RATE_LIMIT_AUTH_REQUESTS,
@@ -245,12 +258,16 @@ async def github_login(request: Request):
         "&scope=user:email"
         f"&redirect_uri={redirect_uri}"
     )
-    return RedirectResponse(url)
+    redirect = RedirectResponse(url)
+    for key, value in rate_limit_headers.items():
+        redirect.headers[key] = value
+    return redirect
 
 
 @router.get("/github/callback")
 async def github_callback(request: Request, code: str, db: AsyncSession = Depends(get_db)):
-    enforce_request_rate_limit(
+    rate_limit_headers = enforce_request_rate_limit(
+        None,
         request,
         "auth_github_callback",
         settings.RATE_LIMIT_AUTH_REQUESTS,
@@ -318,7 +335,10 @@ async def github_callback(request: Request, code: str, db: AsyncSession = Depend
             await db.refresh(user)
 
     token = create_access_token({"sub": user.id, "role": user.role})
-    return RedirectResponse(f"{settings.FRONTEND_URL}/auth/success?token={token}")
+    redirect = RedirectResponse(f"{settings.FRONTEND_URL}/auth/success?token={token}")
+    for key, value in rate_limit_headers.items():
+        redirect.headers[key] = value
+    return redirect
 
 
 # ── Me ─────────────────────────────────────────────────────────────────────
