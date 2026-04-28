@@ -1,6 +1,6 @@
 import json
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -60,11 +60,13 @@ def _sample_payload(device_type: str) -> dict:
 @router.get("", include_in_schema=False)
 @router.get("/")
 async def list_api_keys(
+    response: Response,
     request: Request,
     db: AsyncSession = Depends(get_db),
     _: User = Depends(require_admin),
 ):
     enforce_request_rate_limit(
+        response,
         request,
         "api_keys_list",
         settings.RATE_LIMIT_ADMIN_REQUESTS,
@@ -88,11 +90,13 @@ async def list_api_keys(
 @router.post("/{device_id}/regenerate")
 async def regenerate_key(
     device_id: str,
+    response: Response,
     request: Request,
     db: AsyncSession = Depends(get_db),
     _: User = Depends(require_admin),
 ):
     enforce_request_rate_limit(
+        response,
         request,
         "api_keys_regenerate",
         settings.RATE_LIMIT_ADMIN_REQUESTS,
@@ -118,11 +122,13 @@ async def regenerate_key(
 @router.get("/example/{device_id}")
 async def get_example_code(
     device_id: str,
+    response: Response,
     request: Request,
     db: AsyncSession = Depends(get_db),
     _: User = Depends(require_admin),
 ):
     enforce_request_rate_limit(
+        response,
         request,
         "api_keys_example",
         settings.RATE_LIMIT_ADMIN_REQUESTS,
