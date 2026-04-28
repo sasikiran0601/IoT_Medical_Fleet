@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from app.core.config import settings
+from app.core.rate_limit import enforce_request_rate_limit
 from app.db.database import get_db
 from app.models.device import Device
 from app.models.user import User
@@ -59,9 +60,16 @@ def _sample_payload(device_type: str) -> dict:
 @router.get("", include_in_schema=False)
 @router.get("/")
 async def list_api_keys(
+    request: Request,
     db: AsyncSession = Depends(get_db),
     _: User = Depends(require_admin),
 ):
+    enforce_request_rate_limit(
+        request,
+        "api_keys_list",
+        settings.RATE_LIMIT_ADMIN_REQUESTS,
+        settings.RATE_LIMIT_ADMIN_WINDOW_SECONDS,
+    )
     """List all devices with their API keys (admin only)."""
     result = await db.execute(select(Device).order_by(Device.created_at.desc()))
     devices = result.scalars().all()
@@ -80,9 +88,17 @@ async def list_api_keys(
 @router.post("/{device_id}/regenerate")
 async def regenerate_key(
     device_id: str,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     _: User = Depends(require_admin),
 ):
+    enforce_request_rate_limit(
+        request,
+        "api_keys_regenerate",
+        settings.RATE_LIMIT_ADMIN_REQUESTS,
+        settings.RATE_LIMIT_ADMIN_WINDOW_SECONDS,
+        scope_key=device_id,
+    )
     result = await db.execute(
         select(Device).where(Device.device_id == device_id)
     )
@@ -106,6 +122,13 @@ async def get_example_code(
     db: AsyncSession = Depends(get_db),
     _: User = Depends(require_admin),
 ):
+    enforce_request_rate_limit(
+        request,
+        "api_keys_example",
+        settings.RATE_LIMIT_ADMIN_REQUESTS,
+        settings.RATE_LIMIT_ADMIN_WINDOW_SECONDS,
+        scope_key=device_id,
+    )
     """Return ready-to-use code examples for this device."""
     result = await db.execute(
         select(Device).where(Device.device_id == device_id)

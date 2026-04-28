@@ -12,6 +12,7 @@ from app.models.user import User, UserRole
 from app.schemas.user import UserRegister, TokenResponse, UserOut
 from app.core.security import hash_password, verify_password, create_access_token
 from app.core.config import settings
+from app.core.rate_limit import enforce_request_rate_limit
 from app.services.invite_service import get_valid_invite_token
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
@@ -50,7 +51,19 @@ def _resolve_oauth_redirect_uri(request: Request, provider: str) -> str:
 
 # ── Local Register ─────────────────────────────────────────────────────────
 @router.post("/register", response_model=TokenResponse)
-async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
+async def register(
+    request: Request,
+    data: UserRegister,
+    db: AsyncSession = Depends(get_db),
+):
+    enforce_request_rate_limit(
+        request,
+        "auth_register",
+        settings.RATE_LIMIT_REGISTER_REQUESTS,
+        settings.RATE_LIMIT_REGISTER_WINDOW_SECONDS,
+        scope_key=data.email.strip().lower(),
+    )
+
     existing = await db.execute(select(User).where(User.email == data.email))
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -96,9 +109,18 @@ async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
 # ── Local Login ────────────────────────────────────────────────────────────
 @router.post("/login", response_model=TokenResponse)
 async def login(
+    request: Request,
     form: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db),
 ):
+    enforce_request_rate_limit(
+        request,
+        "auth_login",
+        settings.RATE_LIMIT_AUTH_REQUESTS,
+        settings.RATE_LIMIT_AUTH_WINDOW_SECONDS,
+        scope_key=form.username.strip().lower(),
+    )
+
     result = await db.execute(select(User).where(User.email == form.username))
     user = result.scalar_one_or_none()
 
@@ -115,6 +137,12 @@ async def login(
 # ── Google OAuth ───────────────────────────────────────────────────────────
 @router.get("/google")
 async def google_login(request: Request):
+    enforce_request_rate_limit(
+        request,
+        "auth_google",
+        settings.RATE_LIMIT_AUTH_REQUESTS,
+        settings.RATE_LIMIT_AUTH_WINDOW_SECONDS,
+    )
     if not settings.GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=501, detail="Google OAuth not configured")
     redirect_uri = _resolve_oauth_redirect_uri(request, "google")
@@ -134,6 +162,12 @@ async def google_callback(
     request: Request,
     db: AsyncSession = Depends(get_db),
 ):
+    enforce_request_rate_limit(
+        request,
+        "auth_google_callback",
+        settings.RATE_LIMIT_AUTH_REQUESTS,
+        settings.RATE_LIMIT_AUTH_WINDOW_SECONDS,
+    )
     if not settings.GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=501, detail="Google OAuth not configured")
     redirect_uri = _resolve_oauth_redirect_uri(request, "google")
@@ -196,6 +230,12 @@ async def google_callback(
 # ── GitHub OAuth ───────────────────────────────────────────────────────────
 @router.get("/github")
 async def github_login(request: Request):
+    enforce_request_rate_limit(
+        request,
+        "auth_github",
+        settings.RATE_LIMIT_AUTH_REQUESTS,
+        settings.RATE_LIMIT_AUTH_WINDOW_SECONDS,
+    )
     if not settings.GITHUB_CLIENT_ID:
         raise HTTPException(status_code=501, detail="GitHub OAuth not configured")
     redirect_uri = _resolve_oauth_redirect_uri(request, "github")
@@ -209,7 +249,13 @@ async def github_login(request: Request):
 
 
 @router.get("/github/callback")
-async def github_callback(code: str, db: AsyncSession = Depends(get_db)):
+async def github_callback(request: Request, code: str, db: AsyncSession = Depends(get_db)):
+    enforce_request_rate_limit(
+        request,
+        "auth_github_callback",
+        settings.RATE_LIMIT_AUTH_REQUESTS,
+        settings.RATE_LIMIT_AUTH_WINDOW_SECONDS,
+    )
     if not settings.GITHUB_CLIENT_ID:
         raise HTTPException(status_code=501, detail="GitHub OAuth not configured")
 

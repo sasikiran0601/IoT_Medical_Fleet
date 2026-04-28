@@ -6,6 +6,7 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 
 from app.core.config import settings
+from app.core.rate_limit import rate_limiter
 from app.db.database import AsyncSessionLocal
 from app.models.device import Device
 from app.models.room import Room
@@ -57,6 +58,18 @@ async def handle_sensor_message(topic: str, payload_bytes: bytes):
                 readings = json.loads(payload_bytes.decode())
             except Exception:
                 print(f"[MQTT] Invalid JSON from {device_id}")
+                return
+
+            is_ecg_payload = isinstance(readings, dict) and "ecg_raw" in readings
+            mqtt_limit = settings.RATE_LIMIT_MQTT_ECG_REQUESTS if is_ecg_payload else settings.RATE_LIMIT_MQTT_REQUESTS
+            allowed, retry_after = rate_limiter.allow(
+                "mqtt_ingest_ecg" if is_ecg_payload else "mqtt_ingest",
+                device_id,
+                mqtt_limit,
+                settings.RATE_LIMIT_MQTT_WINDOW_SECONDS,
+            )
+            if not allowed:
+                print(f"[MQTT] Rate limited telemetry from {device_id}; retry after {retry_after}s")
                 return
 
             async with AsyncSessionLocal() as db:

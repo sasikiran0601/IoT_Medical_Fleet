@@ -4,7 +4,7 @@ from io import StringIO
 from datetime import datetime
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import PlainTextResponse, JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -15,7 +15,9 @@ from app.models.sensor_data import SensorData
 from app.models.user import User
 from app.schemas.sensor_data import SensorDataOut
 from app.schemas.telemetry import SensorHistoryResponse
+from app.core.config import settings
 from app.core.dependencies import get_current_user, get_device_by_api_key
+from app.core.rate_limit import enforce_request_rate_limit
 from app.services.sensor_service import (
     range_check, zscore_check, compute_confidence, is_anomaly
 )
@@ -55,10 +57,18 @@ async def _resolve_device_for_history(device_id: str, db: AsyncSession) -> Devic
 @router.post("/api/v1/data/{device_id}")
 async def ingest_sensor_data(
     device_id: str,
+    request: Request,
     payload: dict,
     db: AsyncSession = Depends(get_db),
     device: Device = Depends(get_device_by_api_key),
 ):
+    enforce_request_rate_limit(
+        request,
+        "http_device_ingest",
+        settings.RATE_LIMIT_DEVICE_HTTP_INGEST_REQUESTS,
+        settings.RATE_LIMIT_DEVICE_HTTP_INGEST_WINDOW_SECONDS,
+        scope_key=device.device_id,
+    )
     if device.device_id != device_id:
         raise HTTPException(status_code=403, detail="Device ID mismatch with API key")
     if not device.is_on:
@@ -146,10 +156,18 @@ async def ingest_sensor_data(
 @router.get("/api/v1/data/{device_id}", response_model=SensorHistoryResponse)
 async def get_sensor_data(
     device_id: str,
+    request: Request,
     limit: int = 100,
     db: AsyncSession = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
+    enforce_request_rate_limit(
+        request,
+        "sensor_history",
+        settings.RATE_LIMIT_SENSOR_HISTORY_REQUESTS,
+        settings.RATE_LIMIT_SENSOR_HISTORY_WINDOW_SECONDS,
+        scope_key=device_id,
+    )
     device = await _resolve_device_for_history(device_id, db)
 
     data_result = await db.execute(
@@ -175,11 +193,19 @@ async def get_sensor_data(
 @router.get("/api/v1/data/{device_id}/export")
 async def export_sensor_data(
     device_id: str,
+    request: Request,
     format: str = Query("csv", pattern="^(csv|json)$"),
     limit: int = Query(500, ge=1, le=5000),
     db: AsyncSession = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
+    enforce_request_rate_limit(
+        request,
+        "sensor_export",
+        settings.RATE_LIMIT_EXPORT_REQUESTS,
+        settings.RATE_LIMIT_EXPORT_WINDOW_SECONDS,
+        scope_key=device_id,
+    )
     device = await _resolve_device_for_history(device_id, db)
 
     query = (
