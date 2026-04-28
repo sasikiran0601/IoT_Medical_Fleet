@@ -4,7 +4,7 @@ from io import StringIO
 from datetime import datetime
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from fastapi.responses import PlainTextResponse, JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -57,12 +57,14 @@ async def _resolve_device_for_history(device_id: str, db: AsyncSession) -> Devic
 @router.post("/api/v1/data/{device_id}")
 async def ingest_sensor_data(
     device_id: str,
+    response: Response,
     request: Request,
     payload: dict,
     db: AsyncSession = Depends(get_db),
     device: Device = Depends(get_device_by_api_key),
 ):
     enforce_request_rate_limit(
+        response,
         request,
         "http_device_ingest",
         settings.RATE_LIMIT_DEVICE_HTTP_INGEST_REQUESTS,
@@ -156,12 +158,14 @@ async def ingest_sensor_data(
 @router.get("/api/v1/data/{device_id}", response_model=SensorHistoryResponse)
 async def get_sensor_data(
     device_id: str,
+    response: Response,
     request: Request,
     limit: int = 100,
     db: AsyncSession = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
     enforce_request_rate_limit(
+        response,
         request,
         "sensor_history",
         settings.RATE_LIMIT_SENSOR_HISTORY_REQUESTS,
@@ -193,6 +197,7 @@ async def get_sensor_data(
 @router.get("/api/v1/data/{device_id}/export")
 async def export_sensor_data(
     device_id: str,
+    response: Response,
     request: Request,
     format: str = Query("csv", pattern="^(csv|json)$"),
     limit: int = Query(500, ge=1, le=5000),
@@ -200,6 +205,7 @@ async def export_sensor_data(
     _: User = Depends(get_current_user),
 ):
     enforce_request_rate_limit(
+        response,
         request,
         "sensor_export",
         settings.RATE_LIMIT_EXPORT_REQUESTS,
