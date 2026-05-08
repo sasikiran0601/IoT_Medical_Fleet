@@ -25,12 +25,30 @@ async def send_chatbot_message(
     Only authenticated admins can trigger this endpoint.
     """
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=60.0) as client:
             resp = await client.post(N8N_WEBHOOK_URL, json=payload.dict())
             
         if resp.status_code != 200:
             raise HTTPException(status_code=resp.status_code, detail="N8N Agent returned an error")
-            
-        return resp.json()
+        
+        # N8N can return JSON or plain text depending on the "Respond to Webhook" node config
+        content_type = resp.headers.get("content-type", "")
+        
+        if "application/json" in content_type:
+            # JSON response — return as-is or wrap it
+            data = resp.json()
+            # If it's already a dict with 'output' key, normalize it
+            if isinstance(data, dict):
+                reply = data.get("output") or data.get("response") or data.get("reply") or str(data)
+            else:
+                reply = str(data)
+        else:
+            # Plain text response from n8n
+            reply = resp.text.strip()
+        
+        return {"response": reply}
+        
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Failed to communicate with N8N agent: {str(e)}")
