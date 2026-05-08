@@ -31,7 +31,7 @@ const MessageBubble = memo(function MessageBubble({ role, text, timestamp, isErr
             <div
                 className={`max-w-xs px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm ${bubbleClass}`}
             >
-                <p className="whitespace-pre-wrap break-words select-none">{text}</p>
+                <p className="whitespace-pre-wrap break-words">{text}</p>
                 {timeStr && (
                     <p
                         className={`text-xs mt-1 ${isError ? "text-red-400" : isBot ? "text-gray-500" : "text-white opacity-70"

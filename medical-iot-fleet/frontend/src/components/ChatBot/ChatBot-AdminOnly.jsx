@@ -91,7 +91,7 @@ export default function ChatBot() {
                     className="fixed bottom-20 right-6 z-50 w-96 rounded-2xl shadow-2xl
                      flex flex-col animate-in slide-in-from-bottom-5 overflow-hidden"
                     style={{
-                        height: "40rem",
+                        height: "75vh",
                         animation: "slideUp 0.3s ease-out",
                         background: "linear-gradient(135deg, rgba(13,148,136,0.08) 0%, rgba(6,182,212,0.06) 30%, #ffffff 60%)",
                         border: "1.5px solid rgba(13,148,136,0.18)",
