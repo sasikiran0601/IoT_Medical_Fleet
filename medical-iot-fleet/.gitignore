@@ -63,3 +63,4 @@ backups/
 *.pem
 *.key
 *.crt
+.claude/settings.local.json

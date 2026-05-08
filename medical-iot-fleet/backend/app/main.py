@@ -17,6 +17,7 @@ from app.api.routes import (
     sensor,
     users,
     webhooks,
+    chatbot,
 )
 from app.db.init_db import init_db
 from app.mqtt.client import create_mqtt_client
@@ -88,6 +89,7 @@ app.include_router(api_keys.router)
 app.include_router(webhooks.router)
 app.include_router(invites.router)
 app.include_router(ws_router)
+app.include_router(chatbot.router)
 
 
 @app.get("/health", tags=["Health"])
