@@ -71,7 +71,9 @@ export function useChat() {
                 }
 
                 const data = await response.json();
-                const botReply = data.response || data.reply || "No response received";
+                let botReply = data.response || data.reply || "No response received";
+                // Strip <think>...</think> tags that may leak from AI model
+                botReply = botReply.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
 
                 // Add bot message to UI
                 const botMsgObj = {

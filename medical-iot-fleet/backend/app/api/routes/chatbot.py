@@ -1,4 +1,5 @@
 import os
+import re
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 import httpx
@@ -45,6 +46,9 @@ async def send_chatbot_message(
         else:
             # Plain text response from n8n
             reply = resp.text.strip()
+        
+        # Strip <think>...</think> tags that leak from AI model reasoning
+        reply = re.sub(r'<think>[\s\S]*?</think>', '', reply, flags=re.DOTALL).strip()
         
         return {"response": reply}
         
