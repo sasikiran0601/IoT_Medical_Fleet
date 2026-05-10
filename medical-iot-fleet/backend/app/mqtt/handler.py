@@ -53,6 +53,7 @@ async def handle_sensor_message(topic: str, payload_bytes: bytes):
             if not device_id:
                 return
             topic_context = extract_topic_context(topic)
+            print(f"[MQTT-DBG] ── data msg from {device_id} on {topic}")
 
             try:
                 readings = json.loads(payload_bytes.decode())
@@ -72,6 +73,8 @@ async def handle_sensor_message(topic: str, payload_bytes: bytes):
                 print(f"[MQTT] Rate limited telemetry from {device_id}; retry after {retry_after}s")
                 return
 
+            print(f"[MQTT-DBG] ① rate-limit passed for {device_id}")
+
             async with AsyncSessionLocal() as db:
                 # Find device by device_id field
                 result = await db.execute(
@@ -83,6 +86,8 @@ async def handle_sensor_message(topic: str, payload_bytes: bytes):
                 if not device:
                     print(f"[MQTT] Unknown device: {device_id}")
                     return
+
+                print(f"[MQTT-DBG] ② device found: {device.name} (type={device.device_type}, is_on={device.is_on}, room_id={device.room_id})")
 
                 mismatch = _location_mismatch(device, topic_context)
                 if mismatch:
@@ -98,6 +103,8 @@ async def handle_sensor_message(topic: str, payload_bytes: bytes):
                     print(f"[MQTT] Ignored telemetry (device OFF): {device_id}")
                     return
 
+                print(f"[MQTT-DBG] ③ device is ON, proceeding with validation")
+
                 # Fetch recent history for statistical check
                 history_result = await db.execute(
                     select(SensorData.readings)
@@ -112,6 +119,8 @@ async def handle_sensor_message(topic: str, payload_bytes: bytes):
                 zscore_result = zscore_check(readings, history)
                 confidence    = compute_confidence(range_result, zscore_result)
                 anomaly       = is_anomaly(confidence)
+
+                print(f"[MQTT-DBG] ④ validation done: confidence={confidence}, anomaly={anomaly}, history_len={len(history)}")
 
                 # Save to DB
                 record = SensorData(
@@ -131,6 +140,8 @@ async def handle_sensor_message(topic: str, payload_bytes: bytes):
                 device.data_state = snapshot["data_state"]
                 device.is_online = snapshot["is_online"]
                 await db.commit()
+
+                print(f"[MQTT-DBG] ⑤ DB commit OK for {device_id}")
 
                 # Create alert if anomaly
                 if anomaly:
@@ -167,7 +178,9 @@ async def handle_sensor_message(topic: str, payload_bytes: bytes):
 
                 print(f"[MQTT] Processed telemetry from {device_id} (confidence={confidence}, anomaly={anomaly})")
         except Exception as exc:
+            import traceback
             print(f"[MQTT] Unhandled processing error for topic={topic}: {exc}")
+            traceback.print_exc()
 
 
 async def handle_status_message(topic: str, payload_bytes: bytes):
