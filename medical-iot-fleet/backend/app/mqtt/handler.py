@@ -63,7 +63,7 @@ async def handle_sensor_message(topic: str, payload_bytes: bytes):
 
             is_ecg_payload = isinstance(readings, dict) and "ecg_raw" in readings
             mqtt_limit = settings.RATE_LIMIT_MQTT_ECG_REQUESTS if is_ecg_payload else settings.RATE_LIMIT_MQTT_REQUESTS
-            allowed, retry_after = rate_limiter.allow(
+            allowed, retry_after, _, _ = rate_limiter.allow(
                 "mqtt_ingest_ecg" if is_ecg_payload else "mqtt_ingest",
                 device_id,
                 mqtt_limit,
