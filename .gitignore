@@ -3,3 +3,6 @@
 *.key
 *.p12
 *.pfx
+
+# Arduino firmware (contains hardcoded credentials)
+pressure_sensor_mqtt.ino
