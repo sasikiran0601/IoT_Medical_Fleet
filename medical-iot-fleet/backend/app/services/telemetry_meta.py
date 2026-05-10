@@ -37,6 +37,13 @@ DEFAULT_FIELD_CONFIG: Dict[str, Dict[str, Any]] = {
     "signal_strength": {"label": "Signal Strength", "unit": "dBm", "preferred_chart": "line", "priority": 50, "group": "connectivity"},
     "battery_voltage": {"label": "Battery Voltage", "unit": "V", "preferred_chart": "line", "priority": 60, "group": "power"},
     "battery_level": {"label": "Battery Level", "unit": "%", "preferred_chart": "line", "priority": 60, "group": "power"},
+    "S1": {"label": "Zone 1 (Head)", "unit": "", "preferred_chart": "area", "priority": 10, "group": "pressure"},
+    "S2": {"label": "Zone 2 (Shoulder)", "unit": "", "preferred_chart": "area", "priority": 11, "group": "pressure"},
+    "S3": {"label": "Zone 3 (Back)", "unit": "", "preferred_chart": "area", "priority": 12, "group": "pressure"},
+    "S4": {"label": "Zone 4 (Hip)", "unit": "", "preferred_chart": "area", "priority": 13, "group": "pressure"},
+    "S5": {"label": "Zone 5 (Leg)", "unit": "", "preferred_chart": "area", "priority": 14, "group": "pressure"},
+    "T1": {"label": "Temp 1", "unit": "°C", "preferred_chart": "line", "priority": 20, "group": "temperature"},
+    "T2": {"label": "Temp 2", "unit": "°C", "preferred_chart": "line", "priority": 21, "group": "temperature"},
 }
 
 DEVICE_TYPE_LAYOUTS: Dict[str, Dict[str, Any]] = {
@@ -45,6 +52,8 @@ DEVICE_TYPE_LAYOUTS: Dict[str, Dict[str, Any]] = {
     "Ventilator": {"mode": "paired", "primary_fields": ["respiratory_rate", "tidal_volume"]},
     "Temperature Sensor": {"mode": "single", "primary_fields": ["temperature"]},
     "Blood Pressure": {"mode": "paired", "primary_fields": ["systolic", "diastolic"]},
+    "Pressure Sensor": {"mode": "grouped", "primary_fields": ["S1", "S2", "S3", "S4", "S5"], "secondary_fields": ["T1", "T2"]},
+    "Defibrillator": {"mode": "grouped", "primary_fields": ["S1", "S2", "S3", "S4", "S5"], "secondary_fields": ["T1", "T2"]},
 }
 
 

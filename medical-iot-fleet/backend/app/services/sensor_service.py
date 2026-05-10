@@ -23,6 +23,24 @@ SENSOR_RULES: Dict[str, Dict[str, Dict]] = {
         "systolic":  {"min": 60, "max": 250, "unit": "mmHg"},
         "diastolic": {"min": 30, "max": 150, "unit": "mmHg"},
     },
+    "Pressure Sensor": {
+        "S1": {"min": 0, "max": 4095, "unit": ""},
+        "S2": {"min": 0, "max": 4095, "unit": ""},
+        "S3": {"min": 0, "max": 4095, "unit": ""},
+        "S4": {"min": 0, "max": 4095, "unit": ""},
+        "S5": {"min": 0, "max": 4095, "unit": ""},
+        "T1": {"min": -10.0, "max": 60.0, "unit": "°C"},
+        "T2": {"min": -10.0, "max": 60.0, "unit": "°C"},
+    },
+    "Defibrillator": {
+        "S1": {"min": 0, "max": 4095, "unit": ""},
+        "S2": {"min": 0, "max": 4095, "unit": ""},
+        "S3": {"min": 0, "max": 4095, "unit": ""},
+        "S4": {"min": 0, "max": 4095, "unit": ""},
+        "S5": {"min": 0, "max": 4095, "unit": ""},
+        "T1": {"min": -10.0, "max": 60.0, "unit": "°C"},
+        "T2": {"min": -10.0, "max": 60.0, "unit": "°C"},
+    },
 }
 
 
